@@ -156,6 +156,9 @@
   <ItemGroup>
     <ClCompile Include="SnakeConsole.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="include\" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

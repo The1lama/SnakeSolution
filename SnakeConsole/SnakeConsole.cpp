@@ -5,9 +5,13 @@
 #include <conio.h>
 #include <Windows.h>
 
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+
+
 #pragma region Defines
 
-#define CLEAR_SCREEN system("cls");
+#define CLEAR_SCREEN std::cout << "\x1b[2J\x1b[H";
 #define SizeToInt(x)  static_cast<int>(x)
 #define twoDArray std::vector<std::vector<int>>
 
@@ -65,13 +69,39 @@ void hideCursor(const bool show)
     SetConsoleCursorInfo(consoleHandle, &cursor);
 }
 
+void cls()
+{
+    static const HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    COORD topLeft {0,0};
+    
+    std::cout.flush();
+    
+    if (!GetConsoleScreenBufferInfo(hOut, &csbi))
+    {
+        // TODO: Handle failure!
+        system("cls");
+        return;
+    }
+    DWORD lenght = csbi.dwSize.X * csbi.dwSize.Y;
+    DWORD written;
+    
+    FillConsoleOutputCharacter(hOut, TEXT(' '), lenght, topLeft, &written);
+    
+    FillConsoleOutputAttribute(hOut, csbi.wAttributes, lenght, topLeft, &written);
+    
+    SetConsoleCursorPosition(hOut, topLeft);
+}
+
 #pragma endregion Helpers
 
 #pragma region Grid
 
 void RenderGrid(twoDArray& grid_area)
 {
-    CLEAR_SCREEN
+    //CLEAR_SCREEN
+    cls();
     for (int y = 0; y < SizeToInt(grid_area[0].size()); y++)
     {
         for (int x = 0; x < SizeToInt(grid_area.size()); x++)
@@ -165,6 +195,11 @@ void PlaySnake()
     Vector2Int direction { 1,0 };
     // only for snake head
     Vector2Int snakeHeadPosition {width/2,height/2};
+    //   Vector2Int snakeBody1 {6,5};
+    //   Vector2Int snakeBody2 {6,4};
+    //   Vector2Int snakeBody3 {6,3};
+    //  Vector2Int snakeBody4 {6,2};
+    //   Vctor2Int snakeBody5 {6,1};
     std::vector<Vector2Int> snakeBody {snakeHeadPosition};
     
     twoDArray gridArea {GenerateGrid(width,height) };
