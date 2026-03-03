@@ -76,13 +76,6 @@ void ClearScreen()
     
 }
 
-class GridCell
-{
-public:
-    int x;
-    int y;
-    char characterChar;
-};
 
 enum class GridValue
 {
