@@ -6,6 +6,8 @@
 #include <fstream>
 #include <string>
 #include <Windows.h>
+#include <limits>
+
 
 #pragma region Defines
 
@@ -151,9 +153,28 @@ namespace SaveFile
         Sort(savedPlays);
         return savedPlays;
     }
-    
-    
 }
+
+struct GameSettings
+{
+    // Game board size
+    int width{20};
+    int height{10};
+    // Draw characters 
+    char wall{'#'};
+    char food{'*'};
+    char player{'@'};
+    char whiteSpace{' '};
+};
+
+enum class GameState
+{
+    MainMenu,
+    PlaySnake,
+    Help,
+    Highscore,
+    Quit,
+};
 
 enum class CellType
 {
@@ -177,7 +198,7 @@ void RenderGrid(const twoDArray& grid_area, const std::vector<Vector2Int>& snake
                 std::cout << '@';
                 continue;
             }
-            else if (Vector2Int{x,y} == foodPosition)
+            if (Vector2Int{x,y} == foodPosition)
             {
                 std::cout << '*';
                 continue;
@@ -187,30 +208,9 @@ void RenderGrid(const twoDArray& grid_area, const std::vector<Vector2Int>& snake
                 std::cout << ' ';
             else if (grid_area[x][y] == CellType::Wall)
                 std::cout << '#';
-            
-                
-            // switch (grid_area[x][y])
-           // {
-           // case CellType::Wall:     // is wall
-           //     std::cout << '#';
-           //     break;
-           // case CellType::Food:     // is food
-           //     std::cout << '*';
-           //     break;
-           // case CellType::Player:     // Player
-           //     std::cout << '@';
-           //     break;
-          //  case CellType::Empty:
-          //  default:    // is white space
-          //      std::cout << ' ';
-          //  }
         }
         std::cout << '\n';
     }
-
-    
-    
-  //  std::cout.flush();
 }
 
 bool IsInsideGrid(const int x,const int y, const twoDArray& gridArea)
@@ -263,7 +263,6 @@ Vector2Int SpawnFood(const twoDArray& grid_area, const std::vector<Vector2Int>& 
         return SpawnFood(grid_area, snakeBody);
     }
     return Vector2Int{randX, randY};
-    //grid_area[randX][randY] = CellType::Food;
 }
 
 // Gets player input when playing snake
@@ -324,7 +323,7 @@ void UpdateSnakePosition(bool& running, std::vector<Vector2Int>& snakeBody,
             // Check the next position the snake is going to hit,
             //if the snake hits wall(1) or a body part of the snake(3), then break the game loop
             CellType nextGridValue { gridArea[newSnakePosition.x][newSnakePosition.y] };
-            if (nextGridValue == CellType::Wall || nextGridValue == CellType::Player)
+            if (nextGridValue == CellType::Wall || (std::find(snakeBody.begin(), snakeBody.end(), newSnakePosition) != snakeBody.end()))
             {
                 running = false;
                 break;
@@ -336,10 +335,6 @@ void UpdateSnakePosition(bool& running, std::vector<Vector2Int>& snakeBody,
         }
         // updates snake body part position
         snakeBody[i] = newSnakePosition;
-        // Removes old snake part (for Drawing)
-       // gridArea[oldSnakeBodyPartPosition.x][oldSnakeBodyPartPosition.y] = CellType::Empty;
-        // Draws new snake part at new position 
-       // gridArea[newSnakePosition.x][newSnakePosition.y] = CellType::Player;
         // sets the current body position so the next position can read where it should go
         lastBodyPosition = oldSnakeBodyPartPosition;
     }
@@ -357,24 +352,23 @@ void DrawGameOverScreen(int gameScore)
 {
     // After game has ended
     CLEAR_SCREEN
+    Helper::ShowCursor(TRUE);
     std::cout << 
         "=================\n" <<
         "    Game Over    \n" << 
         "=================\n";
     std::cout <<
-        "You score is " << gameScore << "\n" <<
-        "Type in you username\n"<<
+        "You score: " << gameScore << "\n" <<
+        "Type in you username/ Or have one character for it should not save\n"<<
         ">>> ";
     
     std::string name { };
-    
     std::cin >> name;
-    std::cout << name;
-    
-    SaveFile::SaveHighscoreData(SaveFile::SaveData{name, gameScore});
-    
-    while (!_kbhit()){}
-    SpawnMainMenu();
+    if (name.length() > 1)
+    {
+        std::cout << name;
+        SaveFile::SaveHighscoreData(SaveFile::SaveData{name, gameScore});
+    }
 }
 
 void PlaySnake()
@@ -428,36 +422,35 @@ void PlaySnake()
 
 void DrawLeaderboard()
 {
+    CLEAR_SCREEN
     std::vector<SaveFile::SaveData> saveFile {SaveFile::GetHighscoreFile()};
     
-    for (int i = 0; i < saveFile.size(); ++i)
+    std::cout << "===== High score =====\n\n";
+    for (int i = 0; i < ToInt(saveFile.size()); ++i)
     {
         std::cout <<
             i+1 << ". " << saveFile[i].name << ": " << saveFile[i].score << "\n"; 
-        if (i>=4)
+        if (i>=4)   // only show top 5 scores
             break;
     }
+    std::cout << "\n=== press ENTER to exit ===";
     
-    std::cin >> std::ws;
-    SpawnMainMenu();
+    while (!_kbhit()){}
 }
 
 void DrawHelpMenu()
 {
     CLEAR_SCREEN
-    std::cout << "===== Control/ Help Menu =====\n";
+    std::cout << "===== Control/ Help Menu =====\n\n";
     std::cout << "Walls: #\n" << "Food: *\n" << "Player: @\n";
     std::cout << "W/A/S/D:\tUP/LEFT/DOWN/RIGHT\n";
-    std::cout << "\n=== press button to exit ===";
+    std::cout << "\n=== press ENTER to exit ===";
     // waits for user keyboard input
     while (!_kbhit()){}
-    SpawnMainMenu();
 }
 
-void SpawnMainMenu()
+void DrawMainMenu(GameState& currentState)
 {
-    Helper::ShowCursor(TRUE);
-    
     CLEAR_SCREEN
     std::cout << "===== Welcome to Snake =====\n";
     std::cout << "Press a number to choose what to do\n";
@@ -465,36 +458,62 @@ void SpawnMainMenu()
         << "2) Controls/Help\n" 
         << "3) Leaderboard\n"
         << "4) Quit\n";
-    std::cout << ">>> ";
-    
-    int choice;
-    std::cin >> choice;
-    if (std::cin.fail())
+   
+}
+
+int ReadIntInRange(int minVal, int maxVal)
+{
+    while (true)
     {
-        CLEAR_SCREEN
+        std::cout << ">>> ";
+        int choice {};
+        std::cin >> choice;
+        if (!std::cin.fail() && choice >= minVal && choice <= maxVal)
+        {
+            CLEAR_SCREEN
+            return choice;
+        }
         std::cin.clear();
-        std::cin.ignore();
+        std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
         std::cout << "Invalid input. Please try again.\n";
-        while (!_kbhit()){}
     }
+
+}
+
+void SpawnMainMenu()
+{
+    Helper::ShowCursor(TRUE);
     
-    switch (choice)
+    GameState currentState { GameState::MainMenu };
+    
+    while (currentState != GameState::Quit)
     {
-    case 1:
-        PlaySnake();
-        break;
-    case 2:
-        DrawHelpMenu();
-        break;
-    case 3:
-        DrawLeaderboard();    
-        break;
-    case 4:
-        break;
-    default:
-        CLEAR_SCREEN
-        std::cout << "Invalid input. Please try again.\n";
-        while (!_kbhit()){}
+        switch (currentState)
+        {
+        case GameState::MainMenu:
+            DrawMainMenu(currentState);
+            int choise = ReadIntInRange(1,4);
+            if (choise == 1) currentState = GameState::PlaySnake;
+            if (choise == 2) currentState = GameState::Help;
+            if (choise == 3) currentState = GameState::Highscore;
+            if (choise == 4) currentState = GameState::Quit;
+            break;
+        case GameState::PlaySnake:
+            PlaySnake();
+            currentState = GameState::MainMenu;
+            break;
+        case GameState::Help:
+            DrawHelpMenu();
+            currentState = GameState::MainMenu;
+            break;
+        case GameState::Highscore:
+            DrawLeaderboard();    
+            currentState = GameState::MainMenu;
+            break;
+        case GameState::Quit:
+            currentState = GameState::Quit;
+            break;
+        }
     }
 }
 
