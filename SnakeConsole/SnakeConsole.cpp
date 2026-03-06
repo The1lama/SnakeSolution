@@ -8,34 +8,13 @@
 #include <Windows.h>
 #include <limits>
 
+#include  "Vector2Int.h"
+
 
 #pragma region Defines
 
 #define CLEAR_SCREEN std::cout << "\x1b[2J\x1b[H";
-#define ToInt(x)  static_cast<int>(x)
 #define twoDArray std::vector<std::vector<CellType>>
-
-struct Vector2Int
-{
-    int x; int y;
-    
-    // method override function for equals to 
-    bool operator==(const Vector2Int& other) const
-    {
-        return x == other.x && y == other.y;
-    }
-    // method override function for not equals
-    bool operator!=(const Vector2Int& other) const
-    {
-        return !(*this == other);
-    }
-    // if putting a - before the Vector2Int it switches to minus
-    Vector2Int operator-() const
-    {
-        return Vector2Int{-x, -y};
-    }
-    
-};
 
 #pragma endregion Defines
 
@@ -189,9 +168,9 @@ enum class CellType
 void RenderGrid(const twoDArray& grid_area, const std::vector<Vector2Int>& snakeBody, const Vector2Int& foodPosition)
 {
     Helper::ClearSnakeScreen();
-    for (int y = 0; y < ToInt(grid_area[0].size()); y++)
+    for (int y = 0; y < static_cast<int>(grid_area[0].size()); y++)
     {
-        for (int x = 0; x < ToInt(grid_area.size()); x++)
+        for (int x = 0; x < static_cast<int>(grid_area.size()); x++)
         {
             if (std::find(snakeBody.begin(), snakeBody.end(), Vector2Int{x,y}) != snakeBody.end())
             {
@@ -215,8 +194,8 @@ void RenderGrid(const twoDArray& grid_area, const std::vector<Vector2Int>& snake
 
 bool IsInsideGrid(const int x,const int y, const twoDArray& gridArea)
 {
-    return x > 0 && x < ToInt(gridArea.size()-1)
-        && y > 0 && y < ToInt(gridArea[0].size()-1);
+    return x > 0 && x < static_cast<int>(gridArea.size()-1)
+        && y > 0 && y < static_cast<int>(gridArea[0].size()-1);
 }
 
 twoDArray GenerateGrid(int width, int height)
@@ -246,8 +225,8 @@ twoDArray GenerateGrid(int width, int height)
 Vector2Int SpawnFood(const twoDArray& grid_area, const std::vector<Vector2Int>& snakeBody)
 {
     // Gets a random pos in the grid_area
-    int randX {Helper::GetRandomNumber(ToInt(grid_area.size())) - 1  };
-    int randY {Helper::GetRandomNumber(ToInt(grid_area[0].size())) - 1 };
+    int randX {Helper::GetRandomNumber(static_cast<int>(grid_area.size())) - 1  };
+    int randY {Helper::GetRandomNumber(static_cast<int>(grid_area[0].size())) - 1 };
     
     // checks if the random pos is inside the grid_area
     // if not rerun this function until it has found a valid pos
@@ -305,7 +284,7 @@ void UpdateSnakePosition(bool& running, std::vector<Vector2Int>& snakeBody,
     Vector2Int lastBodyPosition = snakeBody[0];
     bool SnakeGrowing { false };
     // for moving the whole snake
-    for (int i = 0; i < ToInt(snakeBody.size()); ++i)
+    for (int i = 0; i < static_cast<int>(snakeBody.size()); ++i)
     {
         Vector2Int oldSnakeBodyPartPosition { snakeBody[i] };
         Vector2Int newSnakePosition;
@@ -426,7 +405,7 @@ void DrawLeaderboard()
     std::vector<SaveFile::SaveData> saveFile {SaveFile::GetHighscoreFile()};
     
     std::cout << "===== High score =====\n\n";
-    for (int i = 0; i < ToInt(saveFile.size()); ++i)
+    for (int i = 0; i < static_cast<int>(saveFile.size()); ++i)
     {
         std::cout <<
             i+1 << ". " << saveFile[i].name << ": " << saveFile[i].score << "\n"; 
@@ -491,28 +470,38 @@ void SpawnMainMenu()
         switch (currentState)
         {
         case GameState::MainMenu:
+        {
             DrawMainMenu(currentState);
-            int choise = ReadIntInRange(1,4);
-            if (choise == 1) currentState = GameState::PlaySnake;
-            if (choise == 2) currentState = GameState::Help;
-            if (choise == 3) currentState = GameState::Highscore;
-            if (choise == 4) currentState = GameState::Quit;
+            int fd = ReadIntInRange(1,4);
+            if (fd == 1) currentState = GameState::PlaySnake;
+            if (fd == 2) currentState = GameState::Help;
+            if (fd == 3) currentState = GameState::Highscore;
+            if (fd == 4) currentState = GameState::Quit;
             break;
+        }
         case GameState::PlaySnake:
+        {
             PlaySnake();
             currentState = GameState::MainMenu;
             break;
+        }
         case GameState::Help:
+        {
             DrawHelpMenu();
             currentState = GameState::MainMenu;
             break;
+        }
         case GameState::Highscore:
+        {
             DrawLeaderboard();    
             currentState = GameState::MainMenu;
             break;
+        }
         case GameState::Quit:
+        {
             currentState = GameState::Quit;
             break;
+        }
         }
     }
 }
