@@ -11,6 +11,8 @@
 #include  "Vector2Int.h"
 #include "CellType.h"
 #include "Grid.h"
+#include "Food.h"
+#include "Snake.h"
 
 
 #pragma region Defines
@@ -146,7 +148,7 @@ enum class GameState
 };
 
 // spawns food at a random grid position
-void SpawnFood(Grid& grid)
+void SpawnFood(Grid& grid, Food& food_position)
 {
     while (true)
     {
@@ -157,13 +159,14 @@ void SpawnFood(Grid& grid)
         if (!grid.InBounds(randX, randY))
             continue;
         
-        Vector2Int foodPosition = Vector2Int{randX,randY};
+        Vector2Int newFoodPosition = Vector2Int{randX,randY};
         
         // if the food spawns inside a wall or player it finds a new random place to spawn
-        CellType vectorValue { grid.GetCell(foodPosition)};
+        CellType vectorValue { grid.GetCell(newFoodPosition)};
         if (!(vectorValue == CellType::Wall || vectorValue == CellType::Player))
         {
-            grid.SetCell(foodPosition, CellType::Food);
+            food_position.position = newFoodPosition;
+            grid.SetCell(newFoodPosition, CellType::Food);
             break;
         }
     }
@@ -200,6 +203,39 @@ void GetPlayerInput(bool& running, Vector2Int directionValue, Vector2Int& tempor
         }   
     }
 }
+
+void GetPlayerInput(bool& running, Snake& snake)
+{
+    if ( _kbhit() )
+    {
+        switch (_getch())
+        {
+        case 97:    // [A] west
+            if (snake.Dir() != Direction::East) // if the direction is not the opposite side of the moving direction
+                snake.SetNextDirection(Direction::West); 
+            break;
+        case 119:   // [W] north
+            if (snake.Dir() != Direction::South) // if the direction is not the opposite side of the moving direction
+                snake.SetNextDirection(Direction::North); 
+            break;
+        case 100:   // [D] east
+            if (snake.Dir() != Direction::West) // if the direction is not the opposite side of the moving direction
+                snake.SetNextDirection(Direction::East); 
+            break;
+        case 115:   // [S] south
+            if (snake.Dir() != Direction::North) // if the direction is not the opposite side of the moving direction
+                snake.SetNextDirection(Direction::South); 
+            break;
+        case 113:   // [Q] To main menu
+            running = false;
+            break;
+        default:
+            break;
+        }   
+    }
+}
+
+
 
 // Updates the snake position on grid 
 void UpdateSnakePosition(bool& running, std::vector<Vector2Int>& snakeBody, 
@@ -246,14 +282,14 @@ void UpdateSnakePosition(bool& running, std::vector<Vector2Int>& snakeBody,
     
     grid.SetCell(lastBodyPosition, CellType::Empty);
     
-    if (SnakeGrowing)
-    {
-        // creates a new snake body part and 
-        // spawn in a new food at random position
-        snakeBody.push_back(lastBodyPosition);
-        SpawnFood(grid);
-        ++gameScore;
-    }
+   // if (SnakeGrowing)
+   // {
+   //     // creates a new snake body part and 
+   //     // spawn in a new food at random position
+   //     snakeBody.push_back(lastBodyPosition);
+   //     SpawnFood(grid);
+   //     ++gameScore;
+   // }
 }
 
 void DrawGameOverScreen(int gameScore)
@@ -293,12 +329,15 @@ void PlaySnake()
     // snake movement
     Vector2Int directionValue { 1,0 };
     // creates the snake body and initializes it with it's head at the grid middle
-    std::vector<Vector2Int> snakeBody {Vector2Int{width/2,height/2}};
+    //std::vector<Vector2Int> snakeBody {Vector2Int{width/2,height/2}};
     
     Grid grid = Grid(width,height);
+    Snake snake(Vector2Int(width/2,height/2), grid);
+    
+    Food foodPosition;
     
     // food position
-    SpawnFood(grid);
+    SpawnFood(grid, foodPosition);
     
     grid.Render();
     
@@ -312,16 +351,24 @@ void PlaySnake()
     {
         auto now = std::chrono::steady_clock::now();
         // Gets the player input and stores the value inside temporaryDirectionValue
-        GetPlayerInput(running, directionValue, temporaryDirectionValue);
+        //GetPlayerInput(running, directionValue, temporaryDirectionValue);
+        
+        GetPlayerInput(running, snake);
         
         if (now - lastUpdate >= interval)
         {
-            UpdateSnakePosition(running, snakeBody, grid, temporaryDirectionValue, gameScore);
-            lastUpdate = now;
             grid.Render();
-            //RenderGrid(gridArea, snakeBody, foodPosition);
-            if (directionValue != temporaryDirectionValue)  // Sets the temporaryDirectionValue to the direction value, if it has changed
-                directionValue = temporaryDirectionValue;   
+            
+            bool grow {false};
+            if (snake.Occupies(foodPosition.position))
+                grow = true;
+            
+            snake.Move(grow);
+            if (!snake.IsAlive())
+                break;
+            
+            // UpdateSnakePosition(running, snakeBody, grid, temporaryDirectionValue, gameScore);
+            lastUpdate = now;
         }
     }
     
