@@ -156,10 +156,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CellType.cpp" />
+    <ClCompile Include="Direction.cpp" />
+    <ClCompile Include="Grid.cpp" />
     <ClCompile Include="SnakeConsole.cpp" />
     <ClCompile Include="Vector2Int.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CellType.h" />
+    <ClInclude Include="Direction.h" />
+    <ClInclude Include="Grid.h" />
     <ClInclude Include="Vector2Int.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

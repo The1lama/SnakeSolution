@@ -9,6 +9,9 @@
 #include <limits>
 
 #include  "Vector2Int.h"
+#include "CellType.h"
+#include "Grid.h"
+#include "Direction.h"
 
 
 #pragma region Defines
@@ -134,17 +137,6 @@ namespace SaveFile
     }
 }
 
-struct GameSettings
-{
-    // Game board size
-    int width{20};
-    int height{10};
-    // Draw characters 
-    char wall{'#'};
-    char food{'*'};
-    char player{'@'};
-    char whiteSpace{' '};
-};
 
 enum class GameState
 {
@@ -155,93 +147,28 @@ enum class GameState
     Quit,
 };
 
-enum class CellType
-{
-    Empty,
-    Wall,
-    Food,
-    Player,
-};
-
-#pragma region Grid
-
-void RenderGrid(const twoDArray& grid_area, const std::vector<Vector2Int>& snakeBody, const Vector2Int& foodPosition)
-{
-    Helper::ClearSnakeScreen();
-    for (int y = 0; y < static_cast<int>(grid_area[0].size()); y++)
-    {
-        for (int x = 0; x < static_cast<int>(grid_area.size()); x++)
-        {
-            if (std::find(snakeBody.begin(), snakeBody.end(), Vector2Int{x,y}) != snakeBody.end())
-            {
-                std::cout << '@';
-                continue;
-            }
-            if (Vector2Int{x,y} == foodPosition)
-            {
-                std::cout << '*';
-                continue;
-            }
-            
-            if (grid_area[x][y] == CellType::Empty)
-                std::cout << ' ';
-            else if (grid_area[x][y] == CellType::Wall)
-                std::cout << '#';
-        }
-        std::cout << '\n';
-    }
-}
-
-bool IsInsideGrid(const int x,const int y, const twoDArray& gridArea)
-{
-    return x > 0 && x < static_cast<int>(gridArea.size()-1)
-        && y > 0 && y < static_cast<int>(gridArea[0].size()-1);
-}
-
-twoDArray GenerateGrid(int width, int height)
-{
-    // creates a 2d dynamic array 
-    std::vector<std::vector<CellType>> gridVectors;
-    // sets the size of the 2d dynamic array
-    gridVectors.resize(width, std::vector<CellType>(height));
-    
-    for (int y = 0; y < height; y++)
-    {
-        for (int x = 0; x < width; x++)
-        {
-            if (x == 0 || x == width -1 || y == 0 || y == height -1)    // sets the cell type to wall 
-                gridVectors[x][y] = CellType::Wall;
-            else 
-                gridVectors[x][y] = CellType::Empty;
-        }
-    }
-    
-    return gridVectors;
-}
 
 #pragma endregion Grid
 
 // spawns food at a random grid position
-Vector2Int SpawnFood(const twoDArray& grid_area, const std::vector<Vector2Int>& snakeBody)
+void SpawnFood(Grid& grid)
 {
+    while (true)
+    {
     // Gets a random pos in the grid_area
-    int randX {Helper::GetRandomNumber(static_cast<int>(grid_area.size())) - 1  };
-    int randY {Helper::GetRandomNumber(static_cast<int>(grid_area[0].size())) - 1 };
+    int randX {Helper::GetRandomNumber(grid.Width()) - 1  };
+    int randY {Helper::GetRandomNumber(grid.Height()) - 1 };
     
-    // checks if the random pos is inside the grid_area
-    // if not rerun this function until it has found a valid pos
-    // else place the food at coordinate
-    if (!IsInsideGrid(randX, randY, grid_area))
-    {
-        return SpawnFood(grid_area, snakeBody);
-    }
+    Vector2Int foodPosition = Vector2Int{randX,randY};
+    
     // if the food spawns inside a wall or player it finds a new random place to spawn
-    CellType vectorValue { grid_area[randX][randY] };
-    if (vectorValue == CellType::Wall || ((std::find(snakeBody.begin(), snakeBody.end(), Vector2Int{randX,randY}) != snakeBody.end())))
-    {
-        return SpawnFood(grid_area, snakeBody);
+        CellType vectorValue { grid.GetCell(foodPosition)};
+        if (!(vectorValue == CellType::Wall || vectorValue == CellType::Player))
+        {
+            grid.SetCell(foodPosition, CellType::Food);
+            break;
+        }
     }
-    return Vector2Int{randX, randY};
 }
 
 // Gets player input when playing snake
@@ -278,7 +205,7 @@ void GetPlayerInput(bool& running, Vector2Int directionValue, Vector2Int& tempor
 
 // Updates the snake position on grid 
 void UpdateSnakePosition(bool& running, std::vector<Vector2Int>& snakeBody, 
-    const std::vector<std::vector<CellType>>& gridArea, Vector2Int& temporaryDirectionValue, Vector2Int& foodPosition, int& gameScore)
+    Grid& grid, Vector2Int& temporaryDirectionValue, int& gameScore)
 {
     // for initializing the snake start body position, Start from snake head
     Vector2Int lastBodyPosition = snakeBody[0];
@@ -301,28 +228,32 @@ void UpdateSnakePosition(bool& running, std::vector<Vector2Int>& snakeBody,
                     
             // Check the next position the snake is going to hit,
             //if the snake hits wall(1) or a body part of the snake(3), then break the game loop
-            CellType nextGridValue { gridArea[newSnakePosition.x][newSnakePosition.y] };
+            CellType nextGridValue { grid.GetCell(Vector2Int{newSnakePosition.x, newSnakePosition.y}) };
             if (nextGridValue == CellType::Wall || (std::find(snakeBody.begin(), snakeBody.end(), newSnakePosition) != snakeBody.end()))
             {
                 running = false;
                 break;
             }
             //else if snake hits food(2), make the snake longer
-            if (newSnakePosition == foodPosition)
+            if (nextGridValue == CellType::Food)
                 SnakeGrowing = true;
                     
         }
         // updates snake body part position
+        grid.SetCell(newSnakePosition, CellType::Player);
         snakeBody[i] = newSnakePosition;
         // sets the current body position so the next position can read where it should go
         lastBodyPosition = oldSnakeBodyPartPosition;
     }
+    
+    grid.SetCell(lastBodyPosition, CellType::Empty);
+    
     if (SnakeGrowing)
     {
         // creates a new snake body part and 
         // spawn in a new food at random position
         snakeBody.push_back(lastBodyPosition);
-        foodPosition = SpawnFood(gridArea, snakeBody);
+        SpawnFood(grid);
         ++gameScore;
     }
 }
@@ -366,13 +297,12 @@ void PlaySnake()
     // creates the snake body and initializes it with it's head at the grid middle
     std::vector<Vector2Int> snakeBody {Vector2Int{width/2,height/2}};
     
-    twoDArray gridArea {GenerateGrid(width,height) };
+    Grid grid = Grid(width,height);
     
     // food position
-    Vector2Int foodPosition = SpawnFood(gridArea, snakeBody);
+    SpawnFood(grid);
     
-    // SpawnFood(gridArea, snakeBody);
-    RenderGrid(gridArea, snakeBody, foodPosition);
+    grid.Render();
     
     // set timer for how often the snake updates
     auto lastUpdate = std::chrono::steady_clock::now();
@@ -388,9 +318,10 @@ void PlaySnake()
         
         if (now - lastUpdate >= interval)
         {
-            UpdateSnakePosition(running, snakeBody, gridArea, temporaryDirectionValue, foodPosition, gameScore);
+            UpdateSnakePosition(running, snakeBody, grid, temporaryDirectionValue, gameScore);
             lastUpdate = now;
-            RenderGrid(gridArea, snakeBody, foodPosition);
+            grid.Render();
+            //RenderGrid(gridArea, snakeBody, foodPosition);
             if (directionValue != temporaryDirectionValue)  // Sets the temporaryDirectionValue to the direction value, if it has changed
                 directionValue = temporaryDirectionValue;   
         }
