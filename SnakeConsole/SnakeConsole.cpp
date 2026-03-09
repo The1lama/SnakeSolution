@@ -11,13 +11,11 @@
 #include  "Vector2Int.h"
 #include "CellType.h"
 #include "Grid.h"
-#include "Direction.h"
 
 
 #pragma region Defines
 
 #define CLEAR_SCREEN std::cout << "\x1b[2J\x1b[H";
-#define twoDArray std::vector<std::vector<CellType>>
 
 #pragma endregion Defines
 
@@ -147,21 +145,21 @@ enum class GameState
     Quit,
 };
 
-
-#pragma endregion Grid
-
 // spawns food at a random grid position
 void SpawnFood(Grid& grid)
 {
     while (true)
     {
-    // Gets a random pos in the grid_area
-    int randX {Helper::GetRandomNumber(grid.Width()) - 1  };
-    int randY {Helper::GetRandomNumber(grid.Height()) - 1 };
-    
-    Vector2Int foodPosition = Vector2Int{randX,randY};
-    
-    // if the food spawns inside a wall or player it finds a new random place to spawn
+        // Gets a random pos in the grid_area
+        int randX {Helper::GetRandomNumber(grid.Width()) - 1  };
+        int randY {Helper::GetRandomNumber(grid.Height()) - 1 };
+        
+        if (!grid.InBounds(randX, randY))
+            continue;
+        
+        Vector2Int foodPosition = Vector2Int{randX,randY};
+        
+        // if the food spawns inside a wall or player it finds a new random place to spawn
         CellType vectorValue { grid.GetCell(foodPosition)};
         if (!(vectorValue == CellType::Wall || vectorValue == CellType::Player))
         {
@@ -359,7 +357,7 @@ void DrawHelpMenu()
     while (!_kbhit()){}
 }
 
-void DrawMainMenu(GameState& currentState)
+void DrawMainMenu()
 {
     CLEAR_SCREEN
     std::cout << "===== Welcome to Snake =====\n";
@@ -402,7 +400,7 @@ void SpawnMainMenu()
         {
         case GameState::MainMenu:
         {
-            DrawMainMenu(currentState);
+            DrawMainMenu();
             int fd = ReadIntInRange(1,4);
             if (fd == 1) currentState = GameState::PlaySnake;
             if (fd == 2) currentState = GameState::Help;
