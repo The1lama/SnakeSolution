@@ -3,60 +3,44 @@
 #include <random>
 #include <vector>
 #include <conio.h>
-#include <fstream>
 #include <string>
 #include <Windows.h>
 #include <limits>
 
-#include  "Vector2Int.h"
+#include "Vector2Int.h"
 #include "CellType.h"
 #include "Grid.h"
 #include "Food.h"
 #include "Snake.h"
 #include "SaveFile.h"
 #include "SaveData.h"
-
-
-#pragma region Defines
+#include "GameSettings.h"
 
 #define CLEAR_SCREEN std::cout << "\x1b[2J\x1b[H";
 
-#pragma endregion Defines
-
-#pragma region Functions
-
-void SpawnMainMenu();
-
-#pragma endregion Functions
 
 namespace Helper
 {
-int static GetRandomNumber(int max)
-{
-    // Obtains a random number from hardware to seed 
-    std::random_device rd;
-    // Initializes random generator with seed
-    std::mt19937 gen(rd());
-    
-    int maxRange = static_cast<int>(max);
-    std::uniform_int_distribution<int> dist(0, maxRange - 1);
-    return dist(gen);
-}
+    int static GetRandomNumber(int max)
+    {
+        // Obtains a random number from hardware to seed 
+        std::random_device rd;
+        // Initializes random generator with seed
+        std::mt19937 gen(rd());
+        
+        int maxRange = static_cast<int>(max);
+        std::uniform_int_distribution<int> dist(0, maxRange - 1);
+        return dist(gen);
+    }
 
-void ShowCursor(const bool show)
-{
-    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-    CONSOLE_CURSOR_INFO cursor;
-    cursor.dwSize = 100;
-    cursor.bVisible = show;
-    SetConsoleCursorInfo(consoleHandle, &cursor);
-}
-
-void ClearSnakeScreen()
-{
-    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{0,0});
-}
-    
+    static void ShowCursor(const bool show)
+    {
+        HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+        CONSOLE_CURSOR_INFO cursor;
+        cursor.dwSize = 100;
+        cursor.bVisible = show;
+        SetConsoleCursorInfo(consoleHandle, &cursor);
+    }
 }
 
 
@@ -69,12 +53,7 @@ enum class GameState
     Quit,
 };
 
-struct GameSettings
-{
-    const int gridWidth {20};
-    const int gridHeight {10};
-    const std::string savePath { "SaveFile.txt" };
-};
+
 
 GameSettings gameSettings;
 
@@ -88,7 +67,7 @@ void SpawnFood(Grid& grid,const Snake& snake, Food& food_position)
         int randX {Helper::GetRandomNumber(grid.Width()) - 1  };
         int randY {Helper::GetRandomNumber(grid.Height()) - 1 };
         
-        if (!grid.InBounds(randX, randY), snake.Occupies(Vector2Int(randX,randY)))
+        if (!grid.InBounds(randX, randY) || snake.Occupies(Vector2Int{randX,randY}))
             continue;
         
         Vector2Int newFoodPosition = Vector2Int{randX,randY};
@@ -104,7 +83,7 @@ void SpawnFood(Grid& grid,const Snake& snake, Food& food_position)
     }
 }
 
-// Gets player input when playing snake
+// Gets player input when playing snake, will skip if no input is given during the frame
 void GetPlayerInput(bool& running, Snake& snake)
 {
     if ( _kbhit() )
@@ -166,24 +145,26 @@ void PlaySnake()
     bool running { true };
     int gameScore {};
     
-    // width and height of the grid
-    int width { 20 };
-    int height { 10 };
+    GameSettings gameSettings {};
     
+    Grid grid = Grid(gameSettings.width,gameSettings.height);
+    grid.SetEmptyChar(gameSettings.emptyChar);
+    grid.SetFoodChar(gameSettings.foodChar);
+    grid.SetPlayerChar(gameSettings.playerChar);
+    grid.SetWallChar(gameSettings.wallChar);
     
-    Grid grid = Grid(width,height);
-    Snake snake(Vector2Int(width/2,height/2), grid);
+    Snake snake(Vector2Int{gameSettings.width/2,gameSettings.height/2}, grid);
     
     Food foodPosition;
     
     // food position
     SpawnFood(grid, snake, foodPosition);
     
-    grid.Render();
     // set timer for how often the snake updates
     auto lastUpdate = std::chrono::steady_clock::now();
     std::chrono::milliseconds interval {150};
     
+    grid.Render();
     // Snake game loop
     while (running)
     {

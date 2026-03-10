@@ -1,13 +1,12 @@
 ﻿#pragma once
 
-#include <Windows.h>
-#include <iostream>
 #include <vector>
 
 #include "Vector2Int.h"
 #include "CellType.h"
-#include "Direction.h"
-
+#include <iostream>
+#include <ranges>
+#include <Windows.h>
 
 class Grid
 {

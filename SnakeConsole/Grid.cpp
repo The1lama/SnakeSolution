@@ -1,6 +1,5 @@
 ﻿#include "Grid.h"
 
-#include <ranges>
 
 
 // class constructor, this is for creating the play area size
