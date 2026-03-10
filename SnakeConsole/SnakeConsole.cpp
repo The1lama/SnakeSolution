@@ -13,6 +13,8 @@
 #include "Grid.h"
 #include "Food.h"
 #include "Snake.h"
+#include "SaveFile.h"
+#include "SaveData.h"
 
 
 #pragma region Defines
@@ -57,86 +59,6 @@ void ClearSnakeScreen()
     
 }
 
-namespace SaveFile
-{
-    const std::string fileName = "SaveFile.txt";
-    
-    struct SaveData
-    {
-        std::string name;
-        int score;
-    };
-    
-    void Sort(std::vector<SaveData>& data)
-    {
-        for (int i = 0; i < data.size()-1; ++i)
-        {
-            for (int j = 0; j < data.size()-i-1; ++j)
-            {
-                if (data[j].score < data[j+1].score)
-                {
-                    SaveData tempData = data[j];
-                    data[j] = data[j+1];
-                    data[j+1] = tempData;
-                }
-            }
-        }
-    }
-    
-    bool fileExists(const std::string& checkFileName)
-    {
-        return std::ifstream{checkFileName}.good();
-    }
-    
-    void SaveHighscoreData(const SaveData data)
-    {
-        std::ofstream outf{ fileName, std::ios::app };
-        if (!outf)
-        {
-            std::cerr << "Unable to open file \"" << fileName << "\"" << std::endl;
-            return;
-        }
-        outf << data.score <<
-            ' ' << data.name << '\n';
-        outf.close();
-    }
-    
-    std::vector<SaveData> GetHighscoreFile()
-    {
-        // if the file does not exist, creates a new file
-        if (!fileExists(fileName))
-        {
-            std::ofstream outf{ "SaveFile.txt" };
-            outf.close();
-        }
-        
-        std::ifstream inf{ "SaveFile.txt" };
-        
-        // Could not open save file
-        if (!inf)
-        {
-            std::cerr << "Unable to open file \"" << fileName << "\"" << std::endl;
-            return std::vector<SaveData>{};
-        }
-        
-        std::vector<SaveData> savedPlays;
-        std::vector<std::string> strings;
-        std::string strInput{};
-        while (inf >> strInput)
-        {
-            strings.push_back(strInput);
-            strInput.clear();
-        }
-        for (int i = 0; i < strings.size(); i+=2)
-        {
-            savedPlays.push_back(SaveData{strings[i+1], std::stoi(strings[i])});
-        }
-
-        Sort(savedPlays);
-        return savedPlays;
-    }
-}
-
 
 enum class GameState
 {
@@ -147,16 +69,26 @@ enum class GameState
     Quit,
 };
 
-// spawns food at a random grid position
-void SpawnFood(Grid& grid, Food& food_position)
+struct GameSettings
 {
+    const int gridWidth {20};
+    const int gridHeight {10};
+    const std::string savePath { "SaveFile.txt" };
+};
+
+GameSettings gameSettings;
+
+// spawns food at a random grid position
+void SpawnFood(Grid& grid,const Snake& snake, Food& food_position)
+{
+    grid.SetCell(food_position.position, CellType::Empty);
     while (true)
     {
         // Gets a random pos in the grid_area
         int randX {Helper::GetRandomNumber(grid.Width()) - 1  };
         int randY {Helper::GetRandomNumber(grid.Height()) - 1 };
         
-        if (!grid.InBounds(randX, randY))
+        if (!grid.InBounds(randX, randY), snake.Occupies(Vector2Int(randX,randY)))
             continue;
         
         Vector2Int newFoodPosition = Vector2Int{randX,randY};
@@ -173,37 +105,6 @@ void SpawnFood(Grid& grid, Food& food_position)
 }
 
 // Gets player input when playing snake
-void GetPlayerInput(bool& running, Vector2Int directionValue, Vector2Int& temporaryDirectionValue)
-{
-    if ( _kbhit() )
-    {
-        switch (_getch())
-        {
-        case 97:    // [A] west
-            if (directionValue != Vector2Int{1,0}) // if the direction is not the opposite side of the moving direction
-                temporaryDirectionValue = {-1,0};
-            break;
-        case 119:   // [W] north
-            if (directionValue != Vector2Int{0,-1}) // if the direction is not the opposite side of the moving direction
-                temporaryDirectionValue = {0,-1};
-            break;
-        case 100:   // [D] east
-            if (directionValue != Vector2Int{-1,0}) // if the direction is not the opposite side of the moving direction
-                temporaryDirectionValue= {1,0};
-            break;
-        case 115:   // [S] south
-            if (directionValue != Vector2Int{0,-1}) // if the direction is not the opposite side of the moving direction
-                temporaryDirectionValue = {0,1};
-            break;
-        case 113:   // [Q] To main menu
-            running = false;
-            break;
-        default:
-            break;
-        }   
-    }
-}
-
 void GetPlayerInput(bool& running, Snake& snake)
 {
     if ( _kbhit() )
@@ -235,63 +136,6 @@ void GetPlayerInput(bool& running, Snake& snake)
     }
 }
 
-
-
-// Updates the snake position on grid 
-void UpdateSnakePosition(bool& running, std::vector<Vector2Int>& snakeBody, 
-    Grid& grid, Vector2Int& temporaryDirectionValue, int& gameScore)
-{
-    // for initializing the snake start body position, Start from snake head
-    Vector2Int lastBodyPosition = snakeBody[0];
-    bool SnakeGrowing { false };
-    // for moving the whole snake
-    for (int i = 0; i < static_cast<int>(snakeBody.size()); ++i)
-    {
-        Vector2Int oldSnakeBodyPartPosition { snakeBody[i] };
-        Vector2Int newSnakePosition;
-        // check if snake part is body or head
-        if ( i != 0 )
-        {
-            // move by lastBodyPosition
-            newSnakePosition = { lastBodyPosition.x, lastBodyPosition.y };
-        }
-        else
-        {
-            // Move the snake head by direction
-            newSnakePosition = { snakeBody[0].x + temporaryDirectionValue.x, snakeBody[0].y + temporaryDirectionValue.y };
-                    
-            // Check the next position the snake is going to hit,
-            //if the snake hits wall(1) or a body part of the snake(3), then break the game loop
-            CellType nextGridValue { grid.GetCell(Vector2Int{newSnakePosition.x, newSnakePosition.y}) };
-            if (nextGridValue == CellType::Wall || (std::find(snakeBody.begin(), snakeBody.end(), newSnakePosition) != snakeBody.end()))
-            {
-                running = false;
-                break;
-            }
-            //else if snake hits food(2), make the snake longer
-            if (nextGridValue == CellType::Food)
-                SnakeGrowing = true;
-                    
-        }
-        // updates snake body part position
-        grid.SetCell(newSnakePosition, CellType::Player);
-        snakeBody[i] = newSnakePosition;
-        // sets the current body position so the next position can read where it should go
-        lastBodyPosition = oldSnakeBodyPartPosition;
-    }
-    
-    grid.SetCell(lastBodyPosition, CellType::Empty);
-    
-   // if (SnakeGrowing)
-   // {
-   //     // creates a new snake body part and 
-   //     // spawn in a new food at random position
-   //     snakeBody.push_back(lastBodyPosition);
-   //     SpawnFood(grid);
-   //     ++gameScore;
-   // }
-}
-
 void DrawGameOverScreen(int gameScore)
 {
     // After game has ended
@@ -311,7 +155,7 @@ void DrawGameOverScreen(int gameScore)
     if (name.length() > 1)
     {
         std::cout << name;
-        SaveFile::SaveHighscoreData(SaveFile::SaveData{name, gameScore});
+        SaveFile::SaveHighscoreData(SaveData({name, gameScore}), gameSettings.savePath);
     }
 }
 
@@ -326,10 +170,6 @@ void PlaySnake()
     int width { 20 };
     int height { 10 };
     
-    // snake movement
-    Vector2Int directionValue { 1,0 };
-    // creates the snake body and initializes it with it's head at the grid middle
-    //std::vector<Vector2Int> snakeBody {Vector2Int{width/2,height/2}};
     
     Grid grid = Grid(width,height);
     Snake snake(Vector2Int(width/2,height/2), grid);
@@ -337,37 +177,35 @@ void PlaySnake()
     Food foodPosition;
     
     // food position
-    SpawnFood(grid, foodPosition);
+    SpawnFood(grid, snake, foodPosition);
     
     grid.Render();
-    
     // set timer for how often the snake updates
     auto lastUpdate = std::chrono::steady_clock::now();
-    std::chrono::milliseconds interval {200};
-    Vector2Int temporaryDirectionValue = directionValue;
+    std::chrono::milliseconds interval {150};
     
     // Snake game loop
     while (running)
     {
         auto now = std::chrono::steady_clock::now();
-        // Gets the player input and stores the value inside temporaryDirectionValue
-        //GetPlayerInput(running, directionValue, temporaryDirectionValue);
-        
         GetPlayerInput(running, snake);
         
         if (now - lastUpdate >= interval)
         {
-            grid.Render();
-            
-            bool grow {false};
-            if (snake.Occupies(foodPosition.position))
-                grow = true;
-            
-            snake.Move(grow);
-            if (!snake.IsAlive())
+            if (!snake.IsAlive() || !grid.InBounds(snake.Head()))
                 break;
             
-            // UpdateSnakePosition(running, snakeBody, grid, temporaryDirectionValue, gameScore);
+            bool growSnake {false};
+            if (snake.Occupies(foodPosition.position))
+            {
+                growSnake = true;
+                ++gameScore;
+                SpawnFood(grid, snake, foodPosition);
+            }
+            
+            snake.Move(growSnake);
+            
+            grid.Render();
             lastUpdate = now;
         }
     }
@@ -378,13 +216,13 @@ void PlaySnake()
 void DrawLeaderboard()
 {
     CLEAR_SCREEN
-    std::vector<SaveFile::SaveData> saveFile {SaveFile::GetHighscoreFile()};
+    std::vector<SaveData> saveFile {SaveFile::GetHighscoreData(gameSettings.savePath)};
     
     std::cout << "===== High score =====\n\n";
     for (int i = 0; i < static_cast<int>(saveFile.size()); ++i)
     {
         std::cout <<
-            i+1 << ". " << saveFile[i].name << ": " << saveFile[i].score << "\n"; 
+            i+1 << ". " << saveFile[i].playerName << ": " << saveFile[i].score << "\n"; 
         if (i>=4)   // only show top 5 scores
             break;
     }
@@ -408,11 +246,12 @@ void DrawMainMenu()
 {
     CLEAR_SCREEN
     std::cout << "===== Welcome to Snake =====\n";
-    std::cout << "Press a number to choose what to do\n";
-    std::cout << "1) Play Snake \n" 
-        << "2) Controls/Help\n" 
-        << "3) Leaderboard\n"
-        << "4) Quit\n";
+    std::cout << "  Press a number to choose what to do\n";
+    std::cout << "  1) Play Snake \n" 
+              << "  2) Controls/Help\n" 
+              << "  3) Leaderboard\n"
+              << "  4) Quit\n"
+              << "============================\n";
    
 }
 

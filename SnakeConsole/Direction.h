@@ -3,9 +3,9 @@
 
 enum class Direction : uint8_t
 {
-    North,
-    East,
-    South,
-    West,
-    Nothing,
+    North,  // UP
+    East,   // RIGHT
+    South,  // DOWN
+    West,   // LEFT
+    Nothing,// NOTHING
 };

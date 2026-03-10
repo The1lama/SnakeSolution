@@ -43,6 +43,7 @@ public:
     
     // get position to index in array
     int ToIndex(const Vector2Int& position) const;   // y*width+x
+    int ToIndex(const int& x, const int& y) const;
     CellType GetCell(const Vector2Int& position) const;
     
     // clears screen
@@ -52,7 +53,4 @@ public:
     
     // renders grid
     void Render() const;
-    
-    
-    
 };

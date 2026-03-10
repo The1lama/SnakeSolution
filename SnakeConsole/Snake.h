@@ -8,9 +8,9 @@
 class Snake
 {
 private:
-    std::deque<Vector2Int> m_body;
+    std::vector<Vector2Int> m_body;
     Vector2Int m_direction;
-    Direction m_tempDirection;
+    Direction m_tempDirection {Direction::East};
     Grid& m_grid;
     bool m_isAlive {true};
     
@@ -24,10 +24,12 @@ public:
     
     // in what direction the snake is moving 
     Direction Dir() const;
-    Vector2Int Dir(Direction d) ;
+    Vector2Int Dir(Direction d) const;
     
     // Changes the direction the snake is moving
     void SetNextDirection(const Direction d);
+    
+    void SetStartingDirection(const Direction d);
     
     // Move the snake
     void Move(const bool grow);

@@ -34,10 +34,6 @@ void Grid::SetEmptyChar(const char& character)
     m_emptyChar = character;
 }
 
-
-
-
-
 // Get the Width of the grid
 int Grid::Width() const
 {
@@ -64,6 +60,10 @@ bool Grid::InBounds(const int& x, const int& y) const
 int Grid::ToIndex(const Vector2Int& position) const
 {
     return position.y * m_width + position.x;
+}
+int Grid::ToIndex(const int& x, const int& y) const
+{
+    return y * m_width + x;
 }
 
 void Grid::Clear()
@@ -101,9 +101,7 @@ void Grid::Render() const
         for (int x = 0; x < m_width; x++)
         {
             // Get the cell type 
-            CellType cell = m_gridData[y * m_width + x];
-
-            switch (cell)
+            switch (m_gridData[ToIndex(x, y)])
             {
             case CellType::Wall:
                 std::cout << m_wallChar;
