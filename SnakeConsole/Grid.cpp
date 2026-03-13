@@ -51,8 +51,9 @@ bool Grid::InBounds(const Vector2Int& position) const
 }
 bool Grid::InBounds(const int& x, const int& y) const
 {
-    return x > 0 && x < m_width -1 &&
-        y > 0 && y < m_height -1;
+    if (!(x > 0 && x < m_width-1 && y > 0 && y < m_height-1))
+        return false;
+    return GetCell(Vector2Int{x, y}) != CellType::Wall;
 }
 
 // get the index in grid by position
@@ -118,4 +119,9 @@ void Grid::Render() const
         }
         std::cout << '\n';
     }
+}
+
+std::vector<CellType>& Grid::GetGridData()
+{
+    return m_gridData;
 }

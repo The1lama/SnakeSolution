@@ -52,4 +52,6 @@ public:
     
     // renders grid
     void Render() const;
+    
+    std::vector<CellType>& GetGridData();
 };

@@ -1,14 +1,33 @@
 ﻿#include "Snake.h"
 
 
-Snake::Snake(Vector2Int startPosition, Grid& grid) :
-    m_grid(grid)
+Snake::Snake(Vector2Int startPosition, char charType) :
+BaseEntity(charType)
 {
     m_body.push_back(startPosition);
 }
 
-Snake::~Snake()
+// Gets the character char type
+char Snake::GetCharType() const
 {
+    return m_charType;
+}
+// Sets the character char type
+void Snake::SetCharType(char charType)
+{
+    m_charType = charType;
+}
+Vector2Int Snake::GetPosition() const
+{
+    return Head();
+}
+
+void Snake::RenderToGrid(Grid& grid) const
+{
+    for (auto bodyPart: m_body)
+    {
+        grid.SetCell(bodyPart, CellType::Player);
+    }
 }
 
 
@@ -49,7 +68,7 @@ void Snake::SetStartingDirection(const Direction d)
     m_tempDirection = d;
 }
 
-void Snake::Move(const bool grow)
+void Snake::Move(Grid& grid)
 {
     Vector2Int lastBodyPos = Head();
     
@@ -67,21 +86,22 @@ void Snake::Move(const bool grow)
                 m_isAlive = false;
         }
         
-        m_grid.SetCell(newBodyPos, CellType::Player);
         m_body[i] = newBodyPos;
         lastBodyPos = oldBodyPos;
     }
         
-    m_grid.SetCell(lastBodyPos, CellType::Empty);
-    if (grow)
+    grid.SetCell(lastBodyPos, CellType::Empty);
+    if (m_grow)
+    {
+        Grow();
         m_body.push_back(lastBodyPos);
+    }
     
-    // m_grid.SetCell(m_body.front(), CellType::Player);
     if (Dir(m_tempDirection) != m_direction)
         m_direction = Dir(m_tempDirection);
 }
 
-bool Snake::Occupies(const Vector2Int& pos) const
+bool Snake::Occupies(const Vector2Int pos) const
 {
     return std::ranges::find(m_body, pos) != m_body.end();
 }
@@ -94,4 +114,9 @@ bool Snake::HitSelf() const
 bool Snake::IsAlive() const
 {
     return m_isAlive;
+}
+
+void Snake::Grow()
+{
+    m_grow = !m_grow;
 }

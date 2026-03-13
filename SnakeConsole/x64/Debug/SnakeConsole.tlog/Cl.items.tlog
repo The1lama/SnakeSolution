@@ -1,6 +1,8 @@
+C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\BaseEntity.cpp;C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\x64\Debug\BaseEntity.obj
 C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\CellType.cpp;C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\x64\Debug\CellType.obj
 C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\Direction.cpp;C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\x64\Debug\Direction.obj
 C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\Food.cpp;C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\x64\Debug\Food.obj
+C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\FoodEntity.cpp;C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\x64\Debug\FoodEntity.obj
 C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\GameSettings.cpp;C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\x64\Debug\GameSettings.obj
 C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\Grid.cpp;C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\x64\Debug\Grid.obj
 C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\SaveData.cpp;C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\x64\Debug\SaveData.obj
@@ -8,3 +10,4 @@ C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\SaveFile.
 C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\Snake.cpp;C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\x64\Debug\Snake.obj
 C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\SnakeConsole.cpp;C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\x64\Debug\SnakeConsole.obj
 C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\Vector2Int.cpp;C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\x64\Debug\Vector2Int.obj
+C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\WallEntity.cpp;C:\Users\Rasmus.Eriksson\Documents\Programs\SnakeSolution\SnakeConsole\x64\Debug\WallEntity.obj

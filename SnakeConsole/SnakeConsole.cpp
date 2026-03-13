@@ -1,3 +1,4 @@
+#include <array>
 #include <chrono>
 #include <iostream>
 #include <random>
@@ -7,31 +8,24 @@
 #include <Windows.h>
 #include <limits>
 
+#include "BaseEntity.h"
 #include "Vector2Int.h"
 #include "CellType.h"
 #include "Grid.h"
 #include "Food.h"
+#include "FoodEntity.h"
 #include "Snake.h"
 #include "SaveFile.h"
 #include "SaveData.h"
 #include "GameSettings.h"
+#include "WallEntity.h"
 
 #define CLEAR_SCREEN std::cout << "\x1b[2J\x1b[H";
 
 
 namespace Helper
 {
-    int static GetRandomNumber(int max)
-    {
-        // Obtains a random number from hardware to seed 
-        std::random_device rd;
-        // Initializes random generator with seed
-        std::mt19937 gen(rd());
-        
-        int maxRange = static_cast<int>(max);
-        std::uniform_int_distribution<int> dist(0, maxRange - 1);
-        return dist(gen);
-    }
+
 
     static void ShowCursor(const bool show)
     {
@@ -57,31 +51,7 @@ enum class GameState
 
 GameSettings gameSettings;
 
-// spawns food at a random grid position
-void SpawnFood(Grid& grid,const Snake& snake, Food& food_position)
-{
-    grid.SetCell(food_position.position, CellType::Empty);
-    while (true)
-    {
-        // Gets a random pos in the grid_area
-        int randX {Helper::GetRandomNumber(grid.Width()) - 1  };
-        int randY {Helper::GetRandomNumber(grid.Height()) - 1 };
-        
-        if (!grid.InBounds(randX, randY) || snake.Occupies(Vector2Int{randX,randY}))
-            continue;
-        
-        Vector2Int newFoodPosition = Vector2Int{randX,randY};
-        
-        // if the food spawns inside a wall or player it finds a new random place to spawn
-        CellType vectorValue { grid.GetCell(newFoodPosition)};
-        if (!(vectorValue == CellType::Wall || vectorValue == CellType::Player))
-        {
-            food_position.position = newFoodPosition;
-            grid.SetCell(newFoodPosition, CellType::Food);
-            break;
-        }
-    }
-}
+
 
 // Gets player input when playing snake, will skip if no input is given during the frame
 void GetPlayerInput(bool& running, Snake& snake)
@@ -153,12 +123,13 @@ void PlaySnake()
     grid.SetPlayerChar(gameSettings.playerChar);
     grid.SetWallChar(gameSettings.wallChar);
     
-    Snake snake(Vector2Int{gameSettings.width/2,gameSettings.height/2}, grid);
+    Snake snake(Vector2Int{gameSettings.width/2,gameSettings.height/2}, '@');
     
-    Food foodPosition;
+    FoodEntity foodEntity{Vector2Int(0,0), gameSettings.foodChar};
     
     // food position
-    SpawnFood(grid, snake, foodPosition);
+    foodEntity.SpawnFood(grid, snake);
+    //SpawnFood(grid, snake, foodPosition);
     
     // set timer for how often the snake updates
     auto lastUpdate = std::chrono::steady_clock::now();
@@ -176,15 +147,17 @@ void PlaySnake()
             if (!snake.IsAlive() || !grid.InBounds(snake.Head()))
                 break;
             
-            bool growSnake {false};
-            if (snake.Occupies(foodPosition.position))
+            snake.Move(grid);
+            if (snake.Occupies(foodEntity.GetPosition()))
             {
-                growSnake = true;
+                snake.Grow();
                 ++gameScore;
-                SpawnFood(grid, snake, foodPosition);
+                foodEntity.SpawnFood(grid, snake);
             }
             
-            snake.Move(growSnake);
+            
+            snake.RenderToGrid(grid);
+            foodEntity.RenderToGrid(grid);
             
             grid.Render();
             lastUpdate = now;
@@ -302,8 +275,26 @@ void SpawnMainMenu()
     }
 }
 
+void WarmUp()
+{
+    std::vector<std::unique_ptr<BaseEntity>>  entities {};
+    
+    entities.push_back(std::make_unique<FoodEntity>(Vector2Int{1,2}, '*'));
+    entities.push_back(std::make_unique<WallEntity>(Vector2Int{3,4}, '#'));
+    
+    for (auto& entity : entities)
+    {
+        auto isOcupied = entity -> Occupies(Vector2Int{1,2});
+        std::cout << (isOcupied ? "Occupied" : "Free") << std::endl;
+    }
+    
+}
+
 int main(int argc, char* argv[])
 {
     SpawnMainMenu();
+    // WarmUp();
+    
+    std::cin >> std::ws;
     return 0;
 }
