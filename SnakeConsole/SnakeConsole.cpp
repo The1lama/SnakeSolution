@@ -125,11 +125,10 @@ void PlaySnake()
     
     Snake snake(Vector2Int{gameSettings.width/2,gameSettings.height/2}, '@');
     
-    FoodEntity foodEntity{Vector2Int(0,0), gameSettings.foodChar};
+    FoodEntity foodEntity{Vector2Int{0,0}, gameSettings.foodChar};
     
     // food position
     foodEntity.SpawnFood(grid, snake);
-    //SpawnFood(grid, snake, foodPosition);
     
     // set timer for how often the snake updates
     auto lastUpdate = std::chrono::steady_clock::now();
@@ -154,7 +153,6 @@ void PlaySnake()
                 ++gameScore;
                 foodEntity.SpawnFood(grid, snake);
             }
-            
             
             snake.RenderToGrid(grid);
             foodEntity.RenderToGrid(grid);
