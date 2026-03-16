@@ -38,23 +38,18 @@ Vector2Int Snake::Head() const
 
 Direction Snake::Dir() const
 {
-    if(m_direction == Vector2Int(0,-1))  return Direction::North;
-    if(m_direction == Vector2Int(0,1))  return Direction::South;
-    if(m_direction == Vector2Int(1,0))  return Direction::East;
-    if(m_direction == Vector2Int(-1,0))  return Direction::West;
-    return Direction::Nothing;
+    return m_direction;
 }
 Vector2Int Snake::Dir(Direction d) const
 {
     switch (d)
     {
-        case Direction::North:      return Vector2Int(0,-1);
-        case Direction::South:      return Vector2Int(0,1);
-        case Direction::East:       return Vector2Int(1,0);
-        case Direction::West:       return Vector2Int(-1,0);
-        case Direction::Nothing:    return Vector2Int(0,0);
+        case Direction::North:      return Vector2Int{0,-1};
+        case Direction::South:      return Vector2Int{0,1};
+        case Direction::East:       return Vector2Int{1,0};
+        case Direction::West:       return Vector2Int{-1,0};
     }
-    return Vector2Int(0,0);
+    return Vector2Int{0,0};
 }
 
 void Snake::SetNextDirection(const Direction d)
@@ -94,8 +89,8 @@ void Snake::Move(Grid& grid)
     }
     
     // Set the temp direction to current direction
-    if (Dir(m_tempDirection) != m_direction)
-        m_direction = Dir(m_tempDirection);
+    if (m_tempDirection != m_direction)
+        m_direction = m_tempDirection;
 }
 
 bool Snake::Occupies(const Vector2Int pos) const

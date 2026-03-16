@@ -21,4 +21,17 @@ struct Vector2Int
     {
         return Vector2Int{x - other.x, y - other.y};
     }
+
+    bool operator<(const Vector2Int& other) const
+    {
+        if (x < other.x ) return true;
+        if (x > other.x ) return false;
+        return y < other.y;
+    }
+    bool operator>(const Vector2Int& other) const
+    {
+        if (x > other.x ) return true;
+        if (x < other.x ) return false;
+        return y > other.y;
+    }
 };

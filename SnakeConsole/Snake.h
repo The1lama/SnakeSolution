@@ -10,7 +10,7 @@ class Snake : public BaseEntity
 {
 private:
     std::deque<Vector2Int> m_body;
-    Vector2Int m_direction;
+    Direction m_direction {Direction::East};
     Direction m_tempDirection {Direction::East};
     bool m_isAlive {true};
     bool m_grow {false};
@@ -43,7 +43,7 @@ public:
     void Move(Grid& grid);
     
     // Check if the snake is ocupining grid cell
-    bool Occupies(const Vector2Int pos) const;
+    bool Occupies(const Vector2Int pos) const override;
     
     // if the snake hits itself
     bool HitSelf() const;

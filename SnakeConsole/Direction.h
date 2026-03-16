@@ -7,5 +7,4 @@ enum class Direction : uint8_t
     East,   // RIGHT
     South,  // DOWN
     West,   // LEFT
-    Nothing,// NOTHING
 };

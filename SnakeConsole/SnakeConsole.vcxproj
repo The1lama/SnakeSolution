@@ -156,13 +156,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AiInput.cpp" />
     <ClCompile Include="BaseEntity.cpp" />
     <ClCompile Include="CellType.cpp" />
     <ClCompile Include="Direction.cpp" />
     <ClCompile Include="Food.cpp" />
     <ClCompile Include="FoodEntity.cpp" />
+    <ClCompile Include="GameInfo.cpp" />
     <ClCompile Include="GameSettings.cpp" />
     <ClCompile Include="Grid.cpp" />
+    <ClCompile Include="InputSystem.cpp" />
+    <ClCompile Include="PlayerInput.cpp" />
     <ClCompile Include="SaveData.cpp" />
     <ClCompile Include="SaveFile.cpp" />
     <ClCompile Include="Snake.cpp" />
@@ -171,13 +175,17 @@
     <ClCompile Include="WallEntity.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AiInput.h" />
     <ClInclude Include="BaseEntity.h" />
     <ClInclude Include="CellType.h" />
     <ClInclude Include="Direction.h" />
     <ClInclude Include="Food.h" />
     <ClInclude Include="FoodEntity.h" />
+    <ClInclude Include="GameInfo.h" />
     <ClInclude Include="GameSettings.h" />
     <ClInclude Include="Grid.h" />
+    <ClInclude Include="InputSystem.h" />
+    <ClInclude Include="PlayerInput.h" />
     <ClInclude Include="SaveData.h" />
     <ClInclude Include="SaveFile.h" />
     <ClInclude Include="Snake.h" />

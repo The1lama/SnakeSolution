@@ -18,6 +18,10 @@
 #include "SaveFile.h"
 #include "SaveData.h"
 #include "GameSettings.h"
+#include "InputSystem.h"
+#include "PlayerInput.h"
+#include "AiInput.h"
+#include "GameInfo.h"
 #include "WallEntity.h"
 
 #define CLEAR_SCREEN std::cout << "\x1b[2J\x1b[H";
@@ -38,10 +42,11 @@ namespace Helper
 }
 
 
-enum class GameState
+enum class SnakeGameState
 {
     MainMenu,
     PlaySnake,
+    AiSnake,
     Help,
     Highscore,
     Quit,
@@ -50,40 +55,6 @@ enum class GameState
 
 
 GameSettings gameSettings;
-
-
-
-// Gets player input when playing snake, will skip if no input is given during the frame
-void GetPlayerInput(bool& running, Snake& snake)
-{
-    if ( _kbhit() )
-    {
-        switch (_getch())
-        {
-        case 97:    // [A] west
-            if (snake.Dir() != Direction::East) // if the direction is not the opposite side of the moving direction
-                snake.SetNextDirection(Direction::West); 
-            break;
-        case 119:   // [W] north
-            if (snake.Dir() != Direction::South) // if the direction is not the opposite side of the moving direction
-                snake.SetNextDirection(Direction::North); 
-            break;
-        case 100:   // [D] east
-            if (snake.Dir() != Direction::West) // if the direction is not the opposite side of the moving direction
-                snake.SetNextDirection(Direction::East); 
-            break;
-        case 115:   // [S] south
-            if (snake.Dir() != Direction::North) // if the direction is not the opposite side of the moving direction
-                snake.SetNextDirection(Direction::South); 
-            break;
-        case 113:   // [Q] To main menu
-            running = false;
-            break;
-        default:
-            break;
-        }   
-    }
-}
 
 void DrawGameOverScreen(int gameScore)
 {
@@ -108,7 +79,8 @@ void DrawGameOverScreen(int gameScore)
     }
 }
 
-void PlaySnake()
+
+void PlaySnake(bool aiPlay = false)
 {
     CLEAR_SCREEN        // removes menu screen text 
     Helper::ShowCursor(FALSE);      // Hides cursor
@@ -127,6 +99,18 @@ void PlaySnake()
     
     FoodEntity foodEntity{Vector2Int{1,1}, gameSettings.foodChar};
     
+    GameInfo gameInfo{running, grid, snake, foodEntity};
+    
+    
+    // chooses the input system that the game should be using 
+    // first if the player input 
+    // second is the AI input
+    std::unique_ptr<InputSystem> input_system;
+    if (!aiPlay)
+        input_system = std::make_unique<PlayerInput>();
+    else
+        input_system = std::make_unique<AiInput>();
+    
     // food position
     foodEntity.SpawnFood(grid, snake);
     
@@ -139,7 +123,8 @@ void PlaySnake()
     while (running)
     {
         auto now = std::chrono::steady_clock::now();
-        GetPlayerInput(running, snake);
+        //GetPlayerInput(running, snake);
+        input_system->GetNextInput(gameInfo);
         
         if (now - lastUpdate >= interval)
         {
@@ -204,7 +189,8 @@ void DrawMainMenu()
     std::cout << "  1) Play Snake \n" 
               << "  2) Controls/Help\n" 
               << "  3) Leaderboard\n"
-              << "  4) Quit\n"
+              << "  4) AI Play\n"
+              << "  5) Quit\n"
               << "============================\n";
    
 }
@@ -232,43 +218,50 @@ void SpawnMainMenu()
 {
     Helper::ShowCursor(TRUE);
     
-    GameState currentState { GameState::MainMenu };
+    SnakeGameState currentState { SnakeGameState::MainMenu };
     
-    while (currentState != GameState::Quit)
+    while (currentState != SnakeGameState::Quit)
     {
         switch (currentState)
         {
-        case GameState::MainMenu:
+        case SnakeGameState::MainMenu:
         {
             DrawMainMenu();
-            int fd = ReadIntInRange(1,4);
-            if (fd == 1) currentState = GameState::PlaySnake;
-            if (fd == 2) currentState = GameState::Help;
-            if (fd == 3) currentState = GameState::Highscore;
-            if (fd == 4) currentState = GameState::Quit;
+            int fd = ReadIntInRange(1,5);
+            if (fd == 1) currentState = SnakeGameState::PlaySnake;
+            if (fd == 2) currentState = SnakeGameState::Help;
+            if (fd == 3) currentState = SnakeGameState::Highscore;
+            if (fd == 4) currentState = SnakeGameState::AiSnake;
+            if (fd == 5) currentState = SnakeGameState::Quit;
             break;
         }
-        case GameState::PlaySnake:
+        case SnakeGameState::PlaySnake:
         {
             PlaySnake();
-            currentState = GameState::MainMenu;
+            currentState = SnakeGameState::MainMenu;
             break;
         }
-        case GameState::Help:
+        case SnakeGameState::AiSnake:
+        {
+            PlaySnake(true);
+            currentState = SnakeGameState::MainMenu;
+            break;
+        }
+        case SnakeGameState::Help:
         {
             DrawHelpMenu();
-            currentState = GameState::MainMenu;
+            currentState = SnakeGameState::MainMenu;
             break;
         }
-        case GameState::Highscore:
+        case SnakeGameState::Highscore:
         {
             DrawLeaderboard();    
-            currentState = GameState::MainMenu;
+            currentState = SnakeGameState::MainMenu;
             break;
         }
-        case GameState::Quit:
+        case SnakeGameState::Quit:
         {
-            currentState = GameState::Quit;
+            currentState = SnakeGameState::Quit;
             break;
         }
         }
