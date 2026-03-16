@@ -46,12 +46,11 @@ public:
     CellType GetCell(const Vector2Int& position) const;
     
     // clears screen
-    void Clear();
+    void GenerateGrid();
     // sets cell
     void SetCell(const Vector2Int& position, const CellType value);
     
     // renders grid
     void Render() const;
     
-    std::vector<CellType>& GetGridData();
 };

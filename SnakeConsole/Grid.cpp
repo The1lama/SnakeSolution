@@ -8,7 +8,7 @@ Grid::Grid(const int width, const int height) :
     m_height(height),
     m_gridData(width*height)
 {
-    Clear();
+    GenerateGrid();
 }
 // class deconstructor, this is for when this class gets deconstructed so we dont leave any 
 // memory leaks
@@ -66,16 +66,17 @@ int Grid::ToIndex(const int& x, const int& y) const
     return y * m_width + x;
 }
 
-void Grid::Clear()
+void Grid::GenerateGrid()
 {
     for (int y = 0; y < m_height; ++y)
     {
         for (int x = 0; x < m_width; ++x)
         {
+            int index = ToIndex(x, y);
             if (x == 0 || x == m_width-1 || y == 0 || y == m_height-1)    // sets the cell type to wall 
-                m_gridData[y * m_width + x] = CellType::Wall;
+                m_gridData[index] = CellType::Wall;
             else
-                m_gridData[y * m_width + x] = CellType::Empty;
+                m_gridData[ToIndex(x,y)] = CellType::Empty;
         }
     }
 }
@@ -119,9 +120,4 @@ void Grid::Render() const
         }
         std::cout << '\n';
     }
-}
-
-std::vector<CellType>& Grid::GetGridData()
-{
-    return m_gridData;
 }

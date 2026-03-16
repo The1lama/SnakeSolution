@@ -125,7 +125,7 @@ void PlaySnake()
     
     Snake snake(Vector2Int{gameSettings.width/2,gameSettings.height/2}, '@');
     
-    FoodEntity foodEntity{Vector2Int{0,0}, gameSettings.foodChar};
+    FoodEntity foodEntity{Vector2Int{1,1}, gameSettings.foodChar};
     
     // food position
     foodEntity.SpawnFood(grid, snake);
