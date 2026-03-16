@@ -4,7 +4,7 @@
 Snake::Snake(Vector2Int startPosition, char charType) :
 BaseEntity(charType)
 {
-    m_body.push_back(startPosition);
+    m_body.push_front(startPosition);
 }
 
 // Gets the character char type
@@ -17,10 +17,6 @@ void Snake::SetCharType(char charType)
 {
     m_charType = charType;
 }
-Vector2Int Snake::GetPosition() const
-{
-    return Head();
-}
 
 void Snake::RenderToGrid(Grid& grid) const
 {
@@ -30,7 +26,11 @@ void Snake::RenderToGrid(Grid& grid) const
     }
 }
 
-
+// Get first body position 
+Vector2Int Snake::GetPosition() const
+{
+    return Head();
+}
 Vector2Int Snake::Head() const
 {
     return m_body.front();
@@ -70,33 +70,30 @@ void Snake::SetStartingDirection(const Direction d)
 
 void Snake::Move(Grid& grid)
 {
-    Vector2Int lastBodyPos = Head();
-    
-    for (int i = 0; i < m_body.size(); ++i)
+    // if the next move is that he hits him self, 
+    // Game over
+    if (HitSelf())
     {
-        Vector2Int oldBodyPos { m_body[i]};
-        Vector2Int newBodyPos;
-        
-        if ( i != 0 )
-            newBodyPos = lastBodyPos;
-        else
-        {
-            newBodyPos = m_body[0] + Dir(m_tempDirection);
-            if (HitSelf())
-                m_isAlive = false;
-        }
-        
-        m_body[i] = newBodyPos;
-        lastBodyPos = oldBodyPos;
+        m_isAlive = false;
+        return;
     }
-        
-    grid.SetCell(lastBodyPos, CellType::Empty);
+    
+    Vector2Int newHeadPosition = Head() + Dir(m_tempDirection);
+    
+    // Spawn in new head
+    m_body.push_front(newHeadPosition);
+    
+    // if the snake has hit a food piece it should grow else,
+    // remove the tail of the snake and make the cell empty
     if (m_grow)
-    {
         Grow();
-        m_body.push_back(lastBodyPos);
+    else
+    {
+        grid.SetCell(m_body.back(), CellType::Empty);
+        m_body.pop_back();
     }
     
+    // Set the temp direction to current direction
     if (Dir(m_tempDirection) != m_direction)
         m_direction = Dir(m_tempDirection);
 }

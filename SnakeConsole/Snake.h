@@ -9,7 +9,7 @@
 class Snake : public BaseEntity
 {
 private:
-    std::vector<Vector2Int> m_body;
+    std::deque<Vector2Int> m_body;
     Vector2Int m_direction;
     Direction m_tempDirection {Direction::East};
     bool m_isAlive {true};
@@ -23,7 +23,6 @@ public:
     void SetCharType(char charType) override;
     
     void RenderToGrid(Grid& grid) const override;
-    
     
     // Get the first position
     Vector2Int GetPosition() const override;

@@ -143,9 +143,6 @@ void PlaySnake()
         
         if (now - lastUpdate >= interval)
         {
-            if (!snake.IsAlive() || !grid.InBounds(snake.Head()))
-                break;
-            
             snake.Move(grid);
             if (snake.Occupies(foodEntity.GetPosition()))
             {
@@ -154,6 +151,12 @@ void PlaySnake()
                 foodEntity.SpawnFood(grid, snake);
             }
             
+            // if the snake has hit himself or 
+            // that the snake head position is inside a wall 
+            // GAME OVER, else render new grid
+            if (!snake.IsAlive() || !grid.InBounds(snake.Head()))
+                break;
+            
             snake.RenderToGrid(grid);
             foodEntity.RenderToGrid(grid);
             
@@ -161,7 +164,6 @@ void PlaySnake()
             lastUpdate = now;
         }
     }
-    
     DrawGameOverScreen(gameScore);
 }
 
