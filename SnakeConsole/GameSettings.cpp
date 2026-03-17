@@ -1,5 +1,12 @@
 ﻿#include "GameSettings.h"
 
+GameSettings::GameSettings(int Width, int Height) : 
+width(Width),
+height(Height)
+{
+}
+
+
 // Sets the grid Width
 void GameSettings::SetGridWidth(const int _width)
 {

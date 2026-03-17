@@ -170,7 +170,7 @@
     <ClCompile Include="SaveData.cpp" />
     <ClCompile Include="SaveFile.cpp" />
     <ClCompile Include="Snake.cpp" />
-    <ClCompile Include="SnakeConsole.cpp" />
+    <ClCompile Include="Main.cpp" />
     <ClCompile Include="Vector2Int.cpp" />
     <ClCompile Include="WallEntity.cpp" />
   </ItemGroup>

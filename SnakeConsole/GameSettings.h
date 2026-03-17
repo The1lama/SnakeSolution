@@ -3,7 +3,6 @@
 
 struct GameSettings
 {
-    const std::string savePath { "SaveFile.txt" };
     
     int width {20};
     int height {10};
@@ -20,4 +19,8 @@ struct GameSettings
     void SetWallChar(const char wallChar);
     void SetFoodChar(const char foodChar);
     void SetEmptyChar(const char emptyChar);
+    
+    GameSettings(int Width = 20, int Height = 10);
+    ~GameSettings() = default;
+    
 };

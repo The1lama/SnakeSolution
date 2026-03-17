@@ -7,12 +7,21 @@
 
 class SaveFile
 {
+private:
+    const std::string m_fileName;
+    const int m_maxTopScoreAmount = 5;
+    
+    bool IsTopScore(int score);
+
+    static void Sort(std::vector<SaveData>& data);
+    
 public:
-    void static Sort(std::vector<SaveData>& data);
+    SaveFile(std::string fileName, int maxTopScoreAmount = 5);
+    ~SaveFile() = default;
     
-    bool static FileExists(const std::string& filePath);
+    bool FileExists();
     
-    bool static SaveHighscoreData(const SaveData data, const std::string& fileName);
+    bool SaveHighScoreData(const SaveData& data);
     
-    std::vector<SaveData> static GetHighscoreData(const std::string& fileName);
+    std::vector<SaveData> GetHighScoreData();
 };
