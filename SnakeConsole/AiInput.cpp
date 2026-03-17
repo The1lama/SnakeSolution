@@ -59,10 +59,11 @@ void AiInput::GreedyInput(GameInfo& gameInfo)
     Vector2Int snakePosition = snake.GetPosition();
     
     // Get the distance to the food cell
-    int distanceToFood = abs((foodPosition.x - snakePosition.x) + (foodPosition.y - snakePosition.y));
+    // int distanceToFood = abs((foodPosition.x - snakePosition.x) + (foodPosition.y - snakePosition.y));
+    int distanceToFood = abs(foodPosition.x - snakePosition.x) + abs(foodPosition.y - snakePosition.y);
 
     Direction bestDir {};
-    int bestDirVector = distanceToFood+99;
+    int bestDirVector = distanceToFood;
     
     for (int i = 0; i < 4; ++i)
     {
@@ -72,18 +73,19 @@ void AiInput::GreedyInput(GameInfo& gameInfo)
         
         // check if the next position in this direction is a wall or player
         // if it is, then jump to next direction
-        if (nextCell == CellType::Wall || nextCell == CellType::Player)
+        // Also checks so that the snake cant walk into itself
+        if (checkDirection == snake.GetOpisiteDirection(snake.Dir()) || 
+            nextCell == CellType::Wall || nextCell == CellType::Player)
             continue;
         
-        if (checkDirection == GetOpisiteDirection(snake.Dir()))
-            continue;
         
-        Vector2Int offsetPosition = snake.GetPosition() + nextPosition;
+        Vector2Int offsetPosition = snakePosition + nextPosition;
         
         // check the distance to the food cell 
         // if the distance is smaller than the current best direction then change
         // Vector2Int checkDistance = (snakePosition + nextPosition) - foodPosition;
-        int checkDistance = abs((foodPosition.x - offsetPosition.x) + (foodPosition.y - offsetPosition.y));
+        // float checkDistance = abs((foodPosition.x - offsetPosition.x) + (foodPosition.y - offsetPosition.y));
+        int checkDistance = abs(offsetPosition.x - foodPosition.x) + abs(offsetPosition.y - foodPosition.y);
         if (checkDistance < bestDirVector)
         {
             bestDirVector = checkDistance;
@@ -93,26 +95,17 @@ void AiInput::GreedyInput(GameInfo& gameInfo)
     
     // if the best Dir Vector IS NOT (99,99) then change the direction to the best 
     // if the best dir vector IS (99,99) then it means that the snake has boxed itself
-        snake.SetNextDirection(bestDir);
+    snake.SetNextDirection(bestDir);
     
 }
 
-
-Direction AiInput::GetOpisiteDirection(Direction other)
+void AiInput::AStarInput(GameInfo& gameInfo)
 {
-    switch (other)
-    {
-        case Direction::East:
-            return Direction::West;
-        case Direction::North:
-            return Direction::South;
-        case Direction::South:
-            return Direction::North;
-        case Direction::West:
-            return Direction::East;
-    }
+    
+    
+    
+    
 }
-
 
 ////// PUBLIC //////
 

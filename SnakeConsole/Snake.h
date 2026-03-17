@@ -32,6 +32,7 @@ public:
     // in what direction the snake is moving 
     Direction Dir() const;
     Vector2Int Dir(Direction d) const;
+    Direction GetOpisiteDirection(Direction other) const;
     
     // Changes the direction the snake is moving
     void SetNextDirection(const Direction d);

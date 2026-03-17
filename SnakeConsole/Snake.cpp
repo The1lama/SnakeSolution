@@ -52,6 +52,21 @@ Vector2Int Snake::Dir(Direction d) const
     return Vector2Int{0,0};
 }
 
+Direction Snake::GetOpisiteDirection(Direction other) const
+{
+    switch (other)
+    {
+    case Direction::East:
+        return Direction::West;
+    case Direction::North:
+        return Direction::South;
+    case Direction::South:
+        return Direction::North;
+    case Direction::West:
+        return Direction::East;
+    }
+    return Direction::North;
+}
 void Snake::SetNextDirection(const Direction d)
 {
     m_tempDirection = d;
