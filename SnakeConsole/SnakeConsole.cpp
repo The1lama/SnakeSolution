@@ -105,6 +105,7 @@ void PlaySnake(bool aiPlay = false)
     
     // set timer for how often the snake updates
     auto lastUpdate = std::chrono::steady_clock::now();
+    int minimumSpeed {75};
     std::chrono::milliseconds interval {150};
     
     grid.Render();
@@ -131,6 +132,12 @@ void PlaySnake(bool aiPlay = false)
             {
                 snake.Grow();
                 ++gameScore;
+                if (gameScore%2 == 0)
+                {
+                    if (interval.count() <= minimumSpeed)
+                        continue;
+                    interval -= std::chrono::milliseconds {minimumSpeed/10};
+                }
                 foodEntity.SpawnFood(grid, snake);
             }
             

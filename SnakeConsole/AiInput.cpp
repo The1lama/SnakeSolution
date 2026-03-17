@@ -74,7 +74,6 @@ void AiInput::GreedyInput(GameInfo& gameInfo)
             nextCell == CellType::Wall || nextCell == CellType::Player)
             continue;
         
-        
         Vector2Int offsetPosition = snakePosition + nextPosition;
         
         // check the distance to the food cell 

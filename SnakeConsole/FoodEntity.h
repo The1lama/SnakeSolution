@@ -19,9 +19,7 @@ public:
     // Set the character char type
     void SetCharType(char charType) override;
     
-    void SpawnFood() const;
-    
     Vector2Int GetPosition() const override;
     void SetPosition(Vector2Int pos);
-    bool Occupies(Vector2Int pos) const;
+    bool Occupies(Vector2Int pos) const override;
 };
