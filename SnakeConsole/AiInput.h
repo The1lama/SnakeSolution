@@ -7,7 +7,6 @@ private:
     void RandomDirection(GameInfo& gameInfo);
     void QuitGameInput(GameInfo& gameInfo);
     void GreedyInput(GameInfo& gameInfo);
-    void AStarInput(GameInfo& gameInfo);
 public:
     void GetNextInput(GameInfo& gameInfo) override;
     

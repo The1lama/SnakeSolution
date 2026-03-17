@@ -21,7 +21,7 @@ void AiInput::QuitGameInput(GameInfo& gameInfo)
     }
 }
 
-// AI Algorithms
+// AI Algorithms //
 
 void AiInput::RandomDirection(GameInfo& gameInfo)
 {
@@ -57,13 +57,9 @@ void AiInput::GreedyInput(GameInfo& gameInfo)
     
     Vector2Int foodPosition = food.GetPosition();
     Vector2Int snakePosition = snake.GetPosition();
-    
-    // Get the distance to the food cell
-    // int distanceToFood = abs((foodPosition.x - snakePosition.x) + (foodPosition.y - snakePosition.y));
-    int distanceToFood = abs(foodPosition.x - snakePosition.x) + abs(foodPosition.y - snakePosition.y);
 
-    Direction bestDir {};
-    int bestDirVector = distanceToFood;
+    Direction bestDir {snake.Dir()};
+    int bestDirVector = 99;
     
     for (int i = 0; i < 4; ++i)
     {
@@ -93,19 +89,9 @@ void AiInput::GreedyInput(GameInfo& gameInfo)
         }
     }
     
-    // if the best Dir Vector IS NOT (99,99) then change the direction to the best 
-    // if the best dir vector IS (99,99) then it means that the snake has boxed itself
     snake.SetNextDirection(bestDir);
-    
 }
 
-void AiInput::AStarInput(GameInfo& gameInfo)
-{
-    
-    
-    
-    
-}
 
 ////// PUBLIC //////
 

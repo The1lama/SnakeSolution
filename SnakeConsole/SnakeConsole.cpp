@@ -1,18 +1,9 @@
-#include <array>
 #include <chrono>
-#include <iostream>
-#include <random>
-#include <vector>
 #include <conio.h>
-#include <string>
-#include <Windows.h>
-#include <limits>
 
 #include "BaseEntity.h"
 #include "Vector2Int.h"
-#include "CellType.h"
 #include "Grid.h"
-#include "Food.h"
 #include "FoodEntity.h"
 #include "Snake.h"
 #include "SaveFile.h"
@@ -22,7 +13,6 @@
 #include "PlayerInput.h"
 #include "AiInput.h"
 #include "GameInfo.h"
-#include "WallEntity.h"
 
 #define CLEAR_SCREEN std::cout << "\x1b[2J\x1b[H";
 
@@ -87,7 +77,6 @@ void PlaySnake(bool aiPlay = false)
     bool running { true };
     int gameScore {};
     
-    GameSettings gameSettings {};
     
     Grid grid = Grid(gameSettings.width,gameSettings.height);
     grid.SetEmptyChar(gameSettings.emptyChar);
@@ -123,24 +112,27 @@ void PlaySnake(bool aiPlay = false)
     while (running)
     {
         auto now = std::chrono::steady_clock::now();
-        //GetPlayerInput(running, snake);
         input_system->GetNextInput(gameInfo);
         
         if (now - lastUpdate >= interval)
         {
             snake.Move(grid);
+            
+            // if the snake has hit himself or 
+            // that the snake head position is inside a wall 
+            // GAME OVER, else render new grid
+            if (!snake.IsAlive() || !grid.InBounds(snake.Head()))
+            {
+                running = false;
+                break;
+            }
+            
             if (snake.Occupies(foodEntity.GetPosition()))
             {
                 snake.Grow();
                 ++gameScore;
                 foodEntity.SpawnFood(grid, snake);
             }
-            
-            // if the snake has hit himself or 
-            // that the snake head position is inside a wall 
-            // GAME OVER, else render new grid
-            if (!snake.IsAlive() || !grid.InBounds(snake.Head()))
-                break;
             
             snake.RenderToGrid(grid);
             foodEntity.RenderToGrid(grid);
@@ -268,26 +260,10 @@ void SpawnMainMenu()
     }
 }
 
-void WarmUp()
-{
-    std::vector<std::unique_ptr<BaseEntity>>  entities {};
-    
-    entities.push_back(std::make_unique<FoodEntity>(Vector2Int{1,2}, '*'));
-    entities.push_back(std::make_unique<WallEntity>(Vector2Int{3,4}, '#'));
-    
-    for (auto& entity : entities)
-    {
-        auto isOcupied = entity -> Occupies(Vector2Int{1,2});
-        std::cout << (isOcupied ? "Occupied" : "Free") << std::endl;
-    }
-    
-}
 
 int main(int argc, char* argv[])
 {
     SpawnMainMenu();
-    // WarmUp();
     
-    std::cin >> std::ws;
     return 0;
 }
