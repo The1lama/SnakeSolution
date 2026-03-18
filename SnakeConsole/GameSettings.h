@@ -1,9 +1,7 @@
 ﻿#pragma once
-#include <string>
 
 struct GameSettings
 {
-    
     int width {20};
     int height {10};
     

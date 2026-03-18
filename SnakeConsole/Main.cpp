@@ -27,6 +27,14 @@ namespace Helper
         cursor.bVisible = show;
         SetConsoleCursorInfo(consoleHandle, &cursor);
     }
+    
+    bool IsWhitespace(unsigned char c)
+    {
+        return c == ' ' || c == '\t' || c == '\n' ||
+            c == '\r' || c == '\f' || c == '\v';
+    }
+    
+    
 }
 
 namespace TerminalRender
@@ -45,13 +53,16 @@ namespace TerminalRender
             "Type in you username/ Or have one character for it should not save\n"<<
             ">>> ";
     
-        std::string name { };
-        std::cin >> name;
+        // GET the username for the player and removes any whitespaces from the line
+        std::cin.ignore();
+        std::string name;
+        std::getline(std::cin, name);
+        std::erase_if(name, Helper::IsWhitespace);         
+        
+        // if the name is only one char in lenght DO NOT save to file
         if (name.length() > 1)
         {
-            std::cout << name;
             savefile.SaveHighScoreData(SaveData{name,gameScore});
-            // SaveFile::SaveHighscoreData(SaveData({name, gameScore}), gameSettings.savePath);
         }
     }
     
@@ -272,10 +283,25 @@ namespace MainMenu
     }
 }
 
+void RemvoeWitheStapce()
+{
+    std::string s = "";
+    // std::string s = "\tWhitespace \n String   ;";
+    std::getline(std::cin, s);
+    std::cout << "This string s BEFORE removing shitespaces: " << s << "\n\n";
+    
+    s.erase(std::remove_if(s.begin(), s.end(), Helper::IsWhitespace), s.end());
+    
+    
+    std::cout << "This string s AFTER removing shitespaces: " << s << "\n\n";
+    
+    std::cin >> std::ws;
+}
 
 int main(int argc, char* argv[])
 {
     MainMenu::SpawnMainMenu();
+    //RemvoeWitheStapce();
     
     return 0;
 }

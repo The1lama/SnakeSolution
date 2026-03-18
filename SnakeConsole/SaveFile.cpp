@@ -48,7 +48,7 @@ SaveFile::SaveFile(std::string fileName, int maxTopScoreAmount) :
 }
 
 // Check if the save file exists on disk
-bool SaveFile::FileExists()
+bool SaveFile::FileExists() const
 {
     return std::ifstream{m_fileName}.good();
 }
@@ -58,32 +58,18 @@ bool SaveFile::SaveHighScoreData(const SaveData& data)
     if (!IsTopScore(data.score))
         return false;
     
+    std::vector<SaveData> savedPlays = GetHighScoreData();
+    savedPlays.push_back(data);
+    
+    Sort(savedPlays);
+    
+    if (savedPlays.size() > m_maxTopScoreAmount)
+        savedPlays.resize(m_maxTopScoreAmount);
+    
+
     std::ofstream outf{ m_fileName };
-    // if file could not be opened
     if (!outf)
         return false;
-    
-    std::vector<SaveData> savedPlays = GetHighScoreData();
-    
-    if (!savedPlays.empty())
-    {
-        SaveData currentScore = data;
-        for (int i = 0; i < savedPlays.size(); ++i)
-        {
-            int savedScore = savedPlays[i].score;
-            
-            if (currentScore.score > savedScore)
-            {
-                SaveData tempData = savedPlays[i];
-                savedPlays[i] = currentScore;
-                currentScore = tempData;
-            }
-        }
-    }
-    else
-    {
-        savedPlays.push_back(data);
-    }
 
     for (auto playData : savedPlays)
     {
@@ -95,7 +81,7 @@ bool SaveFile::SaveHighScoreData(const SaveData& data)
     return true;
 }
 
-std::vector<SaveData> SaveFile::GetHighScoreData()
+std::vector<SaveData> SaveFile::GetHighScoreData() const
 {
     if (!FileExists())
     {

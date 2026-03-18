@@ -19,9 +19,9 @@ public:
     SaveFile(std::string fileName, int maxTopScoreAmount = 5);
     ~SaveFile() = default;
     
-    bool FileExists();
+    bool FileExists() const;
     
     bool SaveHighScoreData(const SaveData& data);
     
-    std::vector<SaveData> GetHighScoreData();
+    std::vector<SaveData> GetHighScoreData() const;
 };
