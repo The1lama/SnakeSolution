@@ -33,7 +33,7 @@ bool SaveFile::IsTopScore(int score)
     // check the last score of the saved scores is lower than the new score 
     // it is valid for top score
     int lowestHighScore = data.back().score;
-    if (lowestHighScore > score)
+    if (lowestHighScore < score)
         return true;
     
     // if its not a topscorer
