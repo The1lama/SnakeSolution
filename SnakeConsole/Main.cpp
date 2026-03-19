@@ -108,12 +108,24 @@ namespace TerminalRender
                   << "============================\n";
     }
     
+    void DrawGameScore(const GameSettings& gameInfo, const int& gameScore)
+    {
+        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{0,static_cast<short>(gameInfo.height)});
+
+        for (int i = 0; i < gameInfo.width; ++i)
+        {
+            std::cout << '=';
+        }
+        std::cout << "\n>> Current score: " << gameScore << '\n';
+        std::cout << "W/A/S/D to move";
+    }
+    
 }
 
 
 namespace Game
 {
-    void PlaySnake(SaveFile file, bool aiPlay = false)
+    void PlaySnake(SaveFile& file, bool aiPlay = false)
     {
         CLEAR_SCREEN        // removes menu screen text 
         Helper::ShowCursor(FALSE);      // Hides cursor
@@ -188,6 +200,7 @@ namespace Game
                 foodEntity.RenderToGrid(grid);
                 
                 grid.Render();
+                TerminalRender::DrawGameScore(gameSettings, gameScore);
                 lastUpdate = now;
             }
         }
@@ -283,25 +296,11 @@ namespace MainMenu
     }
 }
 
-void RemvoeWitheStapce()
-{
-    std::string s = "";
-    // std::string s = "\tWhitespace \n String   ;";
-    std::getline(std::cin, s);
-    std::cout << "This string s BEFORE removing shitespaces: " << s << "\n\n";
-    
-    s.erase(std::remove_if(s.begin(), s.end(), Helper::IsWhitespace), s.end());
-    
-    
-    std::cout << "This string s AFTER removing shitespaces: " << s << "\n\n";
-    
-    std::cin >> std::ws;
-}
 
 int main(int argc, char* argv[])
 {
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
     MainMenu::SpawnMainMenu();
-    //RemvoeWitheStapce();
     
     return 0;
 }

@@ -51,7 +51,7 @@ bool Grid::InBounds(const Vector2Int& position) const
 }
 bool Grid::InBounds(const int& x, const int& y) const
 {
-    if (!(x > 0 && x < m_width-1 && y > 0 && y < m_height-1))
+    if (!(x >= 0 && x <= m_width-1 && y >= 0 && y <= m_height-1))
         return false;
     return GetCell(Vector2Int{x, y}) != CellType::Wall;
 }
@@ -105,19 +105,24 @@ void Grid::Render() const
             switch (m_gridData[ToIndex(x, y)])
             {
             case CellType::Wall:
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_INTENSITY);
                 std::cout << m_wallChar;
                 continue;
             case CellType::Empty:
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 1);
                 std::cout << m_emptyChar;
                 continue;
             case CellType::Food:
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_INTENSITY);
                 std::cout << m_foodChar;
                 continue;
             case CellType::Player:
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_INTENSITY);
                 std::cout << m_playerChar;
                 continue;
             }
         }
         std::cout << '\n';
     }
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
 }
