@@ -28,7 +28,7 @@ public:
     void SetEmptyChar(const char& character);
     
     // class constructor
-    Grid(int width, int height);
+    Grid(int width, int height, std::vector<CellType>& gridData);
     // class deconstructor
     ~Grid();
     

@@ -78,8 +78,6 @@ void AiInput::GreedyInput(GameInfo& gameInfo)
         
         // check the distance to the food cell 
         // if the distance is smaller than the current best direction then change
-        // Vector2Int checkDistance = (snakePosition + nextPosition) - foodPosition;
-        // float checkDistance = abs((foodPosition.x - offsetPosition.x) + (foodPosition.y - offsetPosition.y));
         int checkDistance = abs(offsetPosition.x - foodPosition.x) + abs(offsetPosition.y - foodPosition.y);
         if (checkDistance < bestDirVector)
         {

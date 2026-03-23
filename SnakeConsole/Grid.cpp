@@ -3,12 +3,11 @@
 
 
 // class constructor, this is for creating the play area size
-Grid::Grid(const int width, const int height) : 
+Grid::Grid(const int width, const int height, std::vector<CellType>& gridData) : 
     m_width(width),
     m_height(height),
-    m_gridData(width*height)
+    m_gridData(gridData)
 {
-    GenerateGrid();
 }
 // class deconstructor, this is for when this class gets deconstructed so we dont leave any 
 // memory leaks

@@ -1,5 +1,6 @@
 #include <chrono>
 #include <conio.h>
+#include <filesystem>
 
 #include "BaseEntity.h"
 #include "Vector2Int.h"
@@ -34,6 +35,23 @@ namespace Helper
             c == '\r' || c == '\f' || c == '\v';
     }
     
+    int ReadIntInRange(int minVal, int maxVal)
+    {
+        while (true)
+        {
+            std::cout << ">>> ";
+            int choice {};
+            std::cin >> choice;
+            if (!std::cin.fail() && choice >= minVal && choice <= maxVal)
+            {
+                CLEAR_SCREEN
+                return choice;
+            }
+            std::cin.clear();
+            std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
+            std::cout << "Invalid input. Please try again.\n";
+        }
+    }
     
 }
 
@@ -108,11 +126,11 @@ namespace TerminalRender
                   << "============================\n";
     }
     
-    void DrawGameScore(const GameSettings& gameInfo, const int& gameScore)
+    void DrawGameScore(const Grid& gridInfo, const int& gameScore)
     {
-        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{0,static_cast<short>(gameInfo.height)});
+        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{0,static_cast<short>(gridInfo.Height())});
 
-        for (int i = 0; i < gameInfo.width; ++i)
+        for (int i = 0; i < gridInfo.Width(); ++i)
         {
             std::cout << '=';
         }
@@ -120,20 +138,100 @@ namespace TerminalRender
         std::cout << "W/A/S/D to move";
     }
     
+    void DrawSnakeLevels()
+    {
+        std::cout << "===== Select Snake Level =====\n";
+        char path[6] = "Maps/";
+        int i{1};
+        for (const auto& entry : std::filesystem::directory_iterator(path))
+        {
+            std::cout << i <<") "<< entry.path().string() << '\n';
+            ++i;
+        }
+        std::cout << "==============================\n";
+    }
+    
 }
 
 
 namespace Game
 {
+    Grid ReadLevelFile(std::string fileName)
+    {
+        std::vector<CellType> customGrid{};
+        std::ifstream inf { fileName };
+        if (!inf)
+            return Grid{0,0, customGrid};
+     
+        int width{};
+        int height{};
+        
+        
+        std::string row;
+        while (std::getline(inf, row))
+        {
+            std::erase_if(row, Helper::IsWhitespace);         
+            // get the height and width of the map
+            if (row.size() > width) width = row.size();
+            ++height;
+
+            for (int i = 0; i < row.size(); ++i)
+            {
+                char c = row[i];
+                switch (c)
+                {
+                case '#':
+                    customGrid.push_back(CellType::Wall);
+                    continue;
+                case '.':
+                default: ;
+                    customGrid.push_back(CellType::Empty);
+                    continue;
+                }
+            }
+        }
+        
+        return Grid {width, height, customGrid};
+    }
+
+
+    std::string GetSnakeLevelFile()
+    {
+        std::string fileName;
+     
+        TerminalRender::DrawSnakeLevels();
+        
+        std::vector<std::string> levels;
+        char path[6] = "Maps/";
+        int levelAmount{0};
+        for (const auto& entry : std::filesystem::directory_iterator(path))
+        {
+            ++levelAmount;
+            levels.push_back(entry.path().string());
+            // std::cout << entry.path().string() << '\n';
+        }
+        
+        if (levelAmount <= 0)
+            return fileName;
+        
+        int levelId = Helper::ReadIntInRange(1,levelAmount);
+        return levels[levelId-1];
+    }
+
     void PlaySnake(SaveFile& file, bool aiPlay = false)
     {
         CLEAR_SCREEN        // removes menu screen text 
+        std::string levelName = GetSnakeLevelFile(); // get the level that the player should play in
+        if (levelName == "") // if there is no levels to play
+            return;
+        
         Helper::ShowCursor(FALSE);      // Hides cursor
         bool running { true };
         int gameScore {};
         GameSettings gameSettings{};
         
-        Grid grid = Grid(gameSettings.width,gameSettings.height);
+        
+        Grid grid = ReadLevelFile(levelName);
         grid.SetEmptyChar(gameSettings.emptyChar);
         grid.SetFoodChar(gameSettings.foodChar);
         grid.SetPlayerChar(gameSettings.playerChar);
@@ -200,7 +298,7 @@ namespace Game
                 foodEntity.RenderToGrid(grid);
                 
                 grid.Render();
-                TerminalRender::DrawGameScore(gameSettings, gameScore);
+                TerminalRender::DrawGameScore(grid, gameScore);
                 lastUpdate = now;
             }
         }
@@ -221,23 +319,6 @@ namespace MainMenu
         Quit,
     };
     
-    int ReadIntInRange(int minVal, int maxVal)
-    {
-        while (true)
-        {
-            std::cout << ">>> ";
-            int choice {};
-            std::cin >> choice;
-            if (!std::cin.fail() && choice >= minVal && choice <= maxVal)
-            {
-                CLEAR_SCREEN
-                return choice;
-            }
-            std::cin.clear();
-            std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
-            std::cout << "Invalid input. Please try again.\n";
-        }
-    }
 
     void SpawnMainMenu()
     {
@@ -254,7 +335,7 @@ namespace MainMenu
             case SnakeGameState::MainMenu:
             {
                 TerminalRender::DrawMainMenu();
-                int fd = ReadIntInRange(1,5);
+                int fd = Helper::ReadIntInRange(1,5);
                 if (fd == 1) currentState = SnakeGameState::PlaySnake;
                 if (fd == 2) currentState = SnakeGameState::Help;
                 if (fd == 3) currentState = SnakeGameState::Highscore;
@@ -302,5 +383,8 @@ int main(int argc, char* argv[])
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
     MainMenu::SpawnMainMenu();
     
+    //Game::ReadLevelFile("Level1.txt");
+    
+    std::cin >> std::ws;
     return 0;
 }

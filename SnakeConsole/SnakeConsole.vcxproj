@@ -192,6 +192,11 @@
     <ClInclude Include="Vector2Int.h" />
     <ClInclude Include="WallEntity.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Maps\Level1.txt" />
+    <Content Include="Maps\Level3.txt" />
+    <Content Include="Maps\Level2.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
