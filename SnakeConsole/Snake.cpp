@@ -90,6 +90,20 @@ void Snake::Move(Grid& grid)
     
     Vector2Int newHeadPosition = Head() + Dir(m_tempDirection);
     
+    // check if the new head position is not on grid 
+    // if it's not switch the position to the other side of the grid so the snake can loop
+    if (!grid.InBounds(newHeadPosition))
+    {
+        if (Head().x == grid.Width() -1 || Head().x == 0)
+        {
+            newHeadPosition.x = Head().x == grid.Width() -1 ? 0 : grid.Width() - 1 ;
+        }
+        if (Head().y == grid.Height() -1 || Head().y == 0)
+        {
+            newHeadPosition.y = Head().y == grid.Height() -1? 0 : grid.Height() - 1 ;
+        }
+    }
+    
     // Spawn in new head
     m_body.push_front(newHeadPosition);
     
