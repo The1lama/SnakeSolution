@@ -3,7 +3,7 @@
 
 
 // class constructor, this is for creating the play area size
-Grid::Grid(const int width, const int height, std::vector<CellType>& gridData) : 
+Grid::Grid(const int width, const int height, std::vector<Cell>& gridData) : 
     m_width(width),
     m_height(height),
     m_gridData(gridData)
@@ -52,7 +52,7 @@ bool Grid::InBounds(const int& x, const int& y) const
 {
     if (!(x >= 0 && x <= m_width-1 && y >= 0 && y <= m_height-1))
         return false;
-    return GetCell(Vector2Int{x, y}) != CellType::Wall;
+    return GetCell(Vector2Int{x, y}).type != CellType::Wall;
 }
 
 // get the index in grid by position
@@ -73,20 +73,20 @@ void Grid::GenerateGrid()
         {
             int index = ToIndex(x, y);
             if (x == 0 || x == m_width-1 || y == 0 || y == m_height-1)    // sets the cell type to wall 
-                m_gridData[index] = CellType::Wall;
+                m_gridData[index] = Cell{CellType::Wall};
             else
-                m_gridData[ToIndex(x,y)] = CellType::Empty;
+                m_gridData[ToIndex(x,y)] = Cell{CellType::Empty};
         }
     }
 }
 
-void Grid::SetCell(const Vector2Int& position, const CellType value)
+void Grid::SetCell(const Vector2Int& position, const Cell value)
 {
     int index = ToIndex(position);
     m_gridData[index] = value;
 }
 
-CellType Grid::GetCell(const Vector2Int& position) const
+Cell Grid::GetCell(const Vector2Int& position) const
 {
     return m_gridData[ToIndex(position)];
 }
@@ -101,7 +101,7 @@ void Grid::Render() const
         for (int x = 0; x < m_width; x++)
         {
             // Get the cell type 
-            switch (m_gridData[ToIndex(x, y)])
+            switch (m_gridData[ToIndex(x, y)].type)
             {
             case CellType::Wall:
                 SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_INTENSITY);

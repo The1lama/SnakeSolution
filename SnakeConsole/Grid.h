@@ -14,7 +14,7 @@ private:
     int m_width {20};
     int m_height {10};
     
-    std::vector<CellType> m_gridData {};
+    std::vector<Cell> m_gridData {};
     
     char m_wallChar{'#'};
     char m_foodChar{'*'};
@@ -28,7 +28,7 @@ public:
     void SetEmptyChar(const char& character);
     
     // class constructor
-    Grid(int width, int height, std::vector<CellType>& gridData);
+    Grid(int width, int height, std::vector<Cell>& gridData);
     // class deconstructor
     ~Grid();
     
@@ -43,12 +43,12 @@ public:
     // get position to index in array
     int ToIndex(const Vector2Int& position) const;   // y*width+x
     int ToIndex(const int& x, const int& y) const;
-    CellType GetCell(const Vector2Int& position) const;
+    Cell GetCell(const Vector2Int& position) const;
     
     // clears screen
     void GenerateGrid();
     // sets cell
-    void SetCell(const Vector2Int& position, const CellType value);
+    void SetCell(const Vector2Int& position, const Cell value);
     
     // renders grid
     void Render() const;

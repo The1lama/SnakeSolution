@@ -65,7 +65,7 @@ void AiInput::GreedyInput(GameInfo& gameInfo)
     {
         Direction checkDirection = static_cast<Direction>(i);
         Vector2Int nextPosition = snake.Dir(checkDirection);
-        CellType nextCell = grid.GetCell(snakePosition + nextPosition);
+        CellType nextCell = grid.GetCell(snakePosition + nextPosition).type;
         
         // check if the next position in this direction is a wall or player
         // if it is, then jump to next direction
@@ -78,7 +78,7 @@ void AiInput::GreedyInput(GameInfo& gameInfo)
         
         // check the distance to the food cell 
         // if the distance is smaller than the current best direction then change
-        int checkDistance = abs(offsetPosition.x - foodPosition.x) + abs(offsetPosition.y - foodPosition.y);
+        int checkDistance = GetHeuristicCost(offsetPosition, foodPosition);
         if (checkDistance < bestDirVector)
         {
             bestDirVector = checkDistance;
@@ -88,6 +88,27 @@ void AiInput::GreedyInput(GameInfo& gameInfo)
     
     snake.SetNextDirection(bestDir);
 }
+
+void AiInput::AStarInput(GameInfo& gameInfo)
+{
+    Grid& grid = gameInfo.grid;
+    FoodEntity& food = gameInfo.food;
+    Snake& snake = gameInfo.snake;
+    
+    Vector2Int foodPosition = food.GetPosition();
+    Vector2Int snakePosition = snake.GetPosition();
+    
+    // std::vector<Cell> openSet{snakePosition};
+    
+}
+
+// Get the Heuristic cost from the start cell to the goal cell
+int AiInput::GetHeuristicCost(const Vector2Int& startCell, const Vector2Int& goalCell) const
+{
+    return abs(startCell.x - goalCell.x) + abs(startCell.y - goalCell.y);
+}
+
+
 
 
 ////// PUBLIC //////

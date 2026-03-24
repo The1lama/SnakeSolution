@@ -158,7 +158,7 @@ namespace Game
 {
     Grid ReadLevelFile(std::string fileName)
     {
-        std::vector<CellType> customGrid{};
+        std::vector<Cell> customGrid{};
         std::ifstream inf { fileName };
         if (!inf)
             return Grid{0,0, customGrid};
@@ -181,11 +181,11 @@ namespace Game
                 switch (c)
                 {
                 case '#':
-                    customGrid.push_back(CellType::Wall);
+                    customGrid.emplace_back(CellType::Wall);
                     continue;
                 case '.':
                 default: ;
-                    customGrid.push_back(CellType::Empty);
+                    customGrid.emplace_back(CellType::Empty);
                     continue;
                 }
             }

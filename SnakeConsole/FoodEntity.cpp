@@ -55,7 +55,7 @@ void FoodEntity::SpawnFood(Grid& grid, Snake& snake)
         Vector2Int newFoodPosition = Vector2Int{randX,randY};
         
         // if the food spawns inside a wall or player it finds a new random place to spawn
-        CellType vectorValue { grid.GetCell(newFoodPosition)};
+        CellType vectorValue { grid.GetCell(newFoodPosition).type};
         if (!(vectorValue == CellType::Wall || vectorValue == CellType::Player))
         {
             SetPosition(newFoodPosition);
@@ -69,7 +69,7 @@ void FoodEntity::SpawnFood(Grid& grid, Snake& snake)
         for (int x = 0; x < grid.Width(); ++x)
         {
             // if the position is not empty
-            if (grid.GetCell(Vector2Int{x, y}) != CellType::Empty) continue;
+            if (grid.GetCell(Vector2Int{x, y}).type != CellType::Empty) continue;
             SetPosition(Vector2Int{x, y});
             return;
         }
