@@ -285,12 +285,14 @@ namespace Game
                 {
                     snake.Grow();
                     ++gameScore;
-                    if (gameScore%2 == 0)
+                    // for every two pieces of food the player eats they get faster until the minimumSpeed has reached
+                    if (gameScore%2 == 0) 
                     {
                         if (interval.count() <= minimumSpeed)
                             continue;
                         interval -= std::chrono::milliseconds {minimumSpeed/10};
                     }
+                    
                     foodEntity.SpawnFood(grid, snake);
                 }
                 
