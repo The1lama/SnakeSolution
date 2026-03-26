@@ -2,7 +2,7 @@
 #include <deque>
 
 #include "BaseEntity.h"
-#include "Direction.h"
+#include "CardinalValues.h"
 #include "Grid.h"
 #include "Vector2Int.h"
 
@@ -10,8 +10,8 @@ class Snake : public BaseEntity
 {
 private:
     std::deque<Vector2Int> m_body;
-    Direction m_direction {Direction::East};
-    Direction m_tempDirection {Direction::East};
+    CardinalValues m_direction {CardinalValues::East};
+    CardinalValues m_tempDirection {CardinalValues::East};
     bool m_isAlive {true};
     bool m_grow {false};
     
@@ -30,15 +30,15 @@ public:
     Vector2Int Head() const;
     
     // in what direction the snake is moving 
-    Direction Dir() const;
-    Vector2Int Dir(Direction d) const;
-    Direction GetOpisiteDirection(Direction other) const;
+    CardinalValues Dir() const;
+    Vector2Int Dir(CardinalValues d) const;
+    CardinalValues GetOpisiteDirection(CardinalValues other) const;
     
     // Changes the direction the snake is moving
-    void SetNextDirection(const Direction d);
+    void SetNextDirection(const CardinalValues d);
     
     // Set the starting DIRECTION of the snake, Default if east
-    void SetStartingDirection(const Direction d);
+    void SetStartingDirection(const CardinalValues d);
     
     // Move the snake
     void Move(Grid& grid);

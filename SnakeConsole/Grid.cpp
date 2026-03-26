@@ -1,6 +1,8 @@
 ﻿#include "Grid.h"
 
-
+#include <iostream>
+#include <ranges>
+#include <Windows.h>
 
 // class constructor, this is for creating the play area size
 Grid::Grid(const int width, const int height, std::vector<Cell>& gridData) : 
@@ -30,6 +32,18 @@ void Grid::SetPlayerChar(const char& character)
 void Grid::SetEmptyChar(const char& character)
 {
     m_emptyChar = character;
+}
+
+// Resets the grid cell values for the Astar algorithm
+void Grid::ResetGridCells()
+{
+    for (int y = 0; y < m_height; ++y)
+    {
+        for (int x = 0; x < m_width; ++x)
+        {
+            m_gridData[ToIndex(x, y)].ResetCellValue();
+        }
+    }
 }
 
 // Get the Width of the grid
@@ -73,20 +87,24 @@ void Grid::GenerateGrid()
         {
             int index = ToIndex(x, y);
             if (x == 0 || x == m_width-1 || y == 0 || y == m_height-1)    // sets the cell type to wall 
-                m_gridData[index] = Cell{CellType::Wall};
+                m_gridData[index] = Cell{CellType::Wall, Vector2Int{x, y}};
             else
-                m_gridData[ToIndex(x,y)] = Cell{CellType::Empty};
+                m_gridData[ToIndex(x,y)] = Cell{CellType::Empty, Vector2Int{x, y}};
         }
     }
 }
 
-void Grid::SetCell(const Vector2Int& position, const Cell value)
+void Grid::SetCell(const Vector2Int& position, const CellType& value)
 {
     int index = ToIndex(position);
-    m_gridData[index] = value;
+    m_gridData[index].type = value;
 }
 
 Cell Grid::GetCell(const Vector2Int& position) const
+{
+    return m_gridData[ToIndex(position)];
+}
+Cell& Grid::GetCellRef(const Vector2Int& position) 
 {
     return m_gridData[ToIndex(position)];
 }

@@ -2,6 +2,8 @@
 
 #include <conio.h>
 
+#include <algorithm>
+
 #include "FoodEntity.h"
 
 ////// PRIVATE //////
@@ -30,20 +32,20 @@ void AiInput::RandomDirection(GameInfo& gameInfo)
     switch (rand() % 3)
     {
     case 0:    // [A] west
-        if (snake.Dir() != Direction::East) // if the direction is not the opposite side of the moving direction
-            snake.SetNextDirection(Direction::West); 
+        if (snake.Dir() != CardinalValues::East) // if the direction is not the opposite side of the moving direction
+            snake.SetNextDirection(CardinalValues::West); 
         break;
     case 1:   // [W] north
-        if (snake.Dir() != Direction::South) // if the direction is not the opposite side of the moving direction
-            snake.SetNextDirection(Direction::North); 
+        if (snake.Dir() != CardinalValues::South) // if the direction is not the opposite side of the moving direction
+            snake.SetNextDirection(CardinalValues::North); 
         break;
     case 2:   // [D] east
-        if (snake.Dir() != Direction::West) // if the direction is not the opposite side of the moving direction
-            snake.SetNextDirection(Direction::East); 
+        if (snake.Dir() != CardinalValues::West) // if the direction is not the opposite side of the moving direction
+            snake.SetNextDirection(CardinalValues::East); 
         break;
     case 3:   // [S] south
-        if (snake.Dir() != Direction::North) // if the direction is not the opposite side of the moving direction
-            snake.SetNextDirection(Direction::South); 
+        if (snake.Dir() != CardinalValues::North) // if the direction is not the opposite side of the moving direction
+            snake.SetNextDirection(CardinalValues::South); 
         break;
     default: ;
     }
@@ -58,12 +60,12 @@ void AiInput::GreedyInput(GameInfo& gameInfo)
     Vector2Int foodPosition = food.GetPosition();
     Vector2Int snakePosition = snake.GetPosition();
 
-    Direction bestDir {snake.Dir()};
+    CardinalValues bestDir {snake.Dir()};
     int bestDirVector = 99;
     
     for (int i = 0; i < 4; ++i)
     {
-        Direction checkDirection = static_cast<Direction>(i);
+        CardinalValues checkDirection = static_cast<CardinalValues>(i);
         Vector2Int nextPosition = snake.Dir(checkDirection);
         CellType nextCell = grid.GetCell(snakePosition + nextPosition).type;
         
@@ -91,15 +93,109 @@ void AiInput::GreedyInput(GameInfo& gameInfo)
 
 void AiInput::AStarInput(GameInfo& gameInfo)
 {
+    Vector2Int neighborDirection[4]
+    {
+        Vector2Int{0,-1},   // NORTH
+        Vector2Int{1,0},    // EAST
+        Vector2Int{-1,0},   // WEST
+        Vector2Int{0,1}     // SOUTH
+    };
+    
+    
     Grid& grid = gameInfo.grid;
     FoodEntity& food = gameInfo.food;
     Snake& snake = gameInfo.snake;
     
+    // reset grid cell values
+    grid.ResetGridCells();
+    
+    
     Vector2Int foodPosition = food.GetPosition();
     Vector2Int snakePosition = snake.GetPosition();
     
-    // std::vector<Cell> openSet{snakePosition};
+    Cell& startCell = grid.GetCellRef(snakePosition);
+    startCell.g = 0;
+    startCell.h = GetHeuristicCost(snakePosition, foodPosition);
     
+    int rounds{0};
+    
+    // starts the algorithm from the snake head position
+    std::vector<Cell*> openSet{&startCell};
+    // The cells that we have visited
+    
+    while (!openSet.empty())
+    {
+        Cell* bestCell = GetBestCell(openSet);
+        
+        if (bestCell->position == foodPosition)
+        {
+            ReconstructInputPath(startCell, *bestCell, grid);
+            return;
+        }
+        
+        bestCell->visited = true;
+        std::erase(openSet, bestCell);
+
+        for (auto& neighborDir : neighborDirection)
+        {
+            Vector2Int neighborPos = bestCell->position + neighborDir;
+            
+            // if the cell is out of bounds
+            if (!grid.InBounds(neighborPos))
+                continue;
+            
+            Cell& neighborCell = grid.GetCellRef(neighborPos);
+            
+            // if the cell is a wall or player can not walk on it OR
+            // the cell is already visided
+            if (!neighborCell.isWalkable() || neighborCell.visited)
+                continue;
+            
+            ++rounds;
+            
+            int tentativeGScore = bestCell->g + 1;
+            
+            // if the cost of the tentative g cost if higher than the neighbor it 
+            // we dont need it 
+            if (tentativeGScore > neighborCell.g) 
+                continue;
+            
+            neighborCell.parentPosition = bestCell->position;
+            neighborCell.g = tentativeGScore;
+            neighborCell.h = neighborCell.GetHeuristicCost(foodPosition);
+            
+            // if the neighbor Cell does not contain in the openCells
+            if (std::find(openSet.begin(), openSet.end(), &neighborCell) == openSet.end())
+            {
+                openSet.push_back(&neighborCell);
+            }
+            
+        }
+        
+    }
+    
+    // if there is no path to the goal place
+    // use the greedy algorithm as backup
+    // GreedyInput(gameInfo);
+}
+
+void AiInput::ReconstructInputPath(const Cell& startPos, const Cell& endPos, Grid& grid)
+{
+    pathCells.clear();
+    const Cell* current = &endPos;
+    
+    while (current->position != startPos.position)
+    {
+        if (!current->parentPosition.has_value()) break;
+        
+        Vector2Int parentPos = current->parentPosition.value();
+        
+        Vector2Int directionVector = current->position - startPos.position;
+        
+        pathCells.push_back(Direction::GetDirectionByVector2Int(directionVector));
+        current = &grid.GetCellRef(parentPos);
+    }
+    std::reverse(pathCells.begin(), pathCells.end());
 }
 
 // Get the Heuristic cost from the start cell to the goal cell
@@ -108,7 +204,17 @@ int AiInput::GetHeuristicCost(const Vector2Int& startCell, const Vector2Int& goa
     return abs(startCell.x - goalCell.x) + abs(startCell.y - goalCell.y);
 }
 
-
+Cell* AiInput::GetBestCell(const std::vector<Cell*>& openSet) const
+{
+    Cell* bestCell{openSet.front()};
+    
+    for (Cell* cell : openSet)
+    {
+        if (bestCell->GetF() > cell->GetF())
+            bestCell = cell;
+    }
+    return bestCell;
+}
 
 
 ////// PUBLIC //////
@@ -117,6 +223,19 @@ void AiInput::GetNextInput(GameInfo& gameInfo)
 {
     // if user wants to quit game
     QuitGameInput(gameInfo);
+    
+    ////// NOT WORKING ASTAR ALGORITHM //////
+    // if (pathCells.empty())
+    //     AStarInput(gameInfo);
+    // 
+    // if (!pathCells.empty())
+    // {
+    //     CardinalValues direction{pathCells.front()};
+    //     gameInfo.snake.SetNextDirection(direction);
+    //     pathCells.pop_front();
+    // }
+    /////////////////////////////////////////
+    
     
     GreedyInput(gameInfo);
     // RandomDirection(gameInfo);

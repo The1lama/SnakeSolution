@@ -1,5 +1,8 @@
 ﻿#pragma once
 #include <cstdint>
+#include <cstdlib>
+#include <memory>
+#include <optional>
 
 #include "Vector2Int.h"
 
@@ -14,15 +17,53 @@ enum class CellType : uint8_t
 
 struct Cell
 {
-    Cell(CellType type) : 
-        type(type){};
+    Cell(CellType cellType, Vector2Int pos) : 
+        type(cellType),
+        position(pos)
+    {}
     ~Cell() = default;
     
     CellType type;
-    bool isWalkable {!(type == CellType::Wall || type == CellType::Player)};
+    /**
+     * This position can only have on position AND cannot be changed
+     */
+    Vector2Int position;
+    bool isWalkable() const
+    {
+        return !(type == CellType::Wall || type == CellType::Player);
+    }
+
     
-    Vector2Int parentPosition;
-    int g;  // the cost from the start node 
-    int h;  // the heuristic cost to the end node
-    int f {g+h};    // sum of for the cost of g and h
+    
+    std::optional<Vector2Int> parentPosition;
+    
+    bool visited{false};
+    
+    int g{INT_MAX};    // the cost from the start node 
+    int h{0};       // the heuristic cost to the end node
+    
+    // sum of for the cost of g and h
+    int GetF() const
+    {
+        if (g == INT_MAX) return INT_MAX;
+        return g+h;
+    }
+    
+    int GetHeuristicCost(const Vector2Int& goalCell) const
+    {
+        return abs(position.x - goalCell.x) + abs(position.y - goalCell.y);
+    }
+    
+    void ResetCellValue()
+    {
+        parentPosition.reset();
+        g = INT_MAX;
+        h=0;
+        visited = false;
+    }
+    
+    bool operator== (const Cell& other) const
+    {
+        return position == other.position;
+    }
 };

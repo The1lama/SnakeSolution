@@ -159,7 +159,7 @@
     <ClCompile Include="AiInput.cpp" />
     <ClCompile Include="BaseEntity.cpp" />
     <ClCompile Include="CellType.cpp" />
-    <ClCompile Include="Direction.cpp" />
+    <ClCompile Include="CardinalValues.cpp" />
     <ClCompile Include="Food.cpp" />
     <ClCompile Include="FoodEntity.cpp" />
     <ClCompile Include="GameInfo.cpp" />
@@ -178,7 +178,7 @@
     <ClInclude Include="AiInput.h" />
     <ClInclude Include="BaseEntity.h" />
     <ClInclude Include="CellType.h" />
-    <ClInclude Include="Direction.h" />
+    <ClInclude Include="CardinalValues.h" />
     <ClInclude Include="Food.h" />
     <ClInclude Include="FoodEntity.h" />
     <ClInclude Include="GameInfo.h" />

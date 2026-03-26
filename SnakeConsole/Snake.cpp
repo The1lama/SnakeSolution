@@ -36,44 +36,44 @@ Vector2Int Snake::Head() const
     return m_body.front();
 }
 
-Direction Snake::Dir() const
+CardinalValues Snake::Dir() const
 {
     return m_direction;
 }
-Vector2Int Snake::Dir(Direction d) const
+Vector2Int Snake::Dir(CardinalValues d) const
 {
     switch (d)
     {
-        case Direction::North:      return Vector2Int{0,-1};
-        case Direction::South:      return Vector2Int{0,1};
-        case Direction::East:       return Vector2Int{1,0};
-        case Direction::West:       return Vector2Int{-1,0};
+        case CardinalValues::North:      return Vector2Int{0,-1};
+        case CardinalValues::South:      return Vector2Int{0,1};
+        case CardinalValues::East:       return Vector2Int{1,0};
+        case CardinalValues::West:       return Vector2Int{-1,0};
     }
     return Vector2Int{0,0};
 }
 
-Direction Snake::GetOpisiteDirection(Direction other) const
+CardinalValues Snake::GetOpisiteDirection(CardinalValues other) const
 {
     switch (other)
     {
-    case Direction::East:
-        return Direction::West;
-    case Direction::North:
-        return Direction::South;
-    case Direction::South:
-        return Direction::North;
-    case Direction::West:
-        return Direction::East;
+    case CardinalValues::East:
+        return CardinalValues::West;
+    case CardinalValues::North:
+        return CardinalValues::South;
+    case CardinalValues::South:
+        return CardinalValues::North;
+    case CardinalValues::West:
+        return CardinalValues::East;
     }
-    return Direction::North;
+    return CardinalValues::North;
 }
-void Snake::SetNextDirection(const Direction d)
+void Snake::SetNextDirection(const CardinalValues d)
 {
     m_tempDirection = d;
 }
 
 // Setting the starting direction of the Snake, Default is east
-void Snake::SetStartingDirection(const Direction d)
+void Snake::SetStartingDirection(const CardinalValues d)
 {
     m_tempDirection = d;
 }

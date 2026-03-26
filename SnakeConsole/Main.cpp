@@ -1,6 +1,8 @@
 #include <chrono>
 #include <conio.h>
 #include <filesystem>
+#include <iostream>
+#include <Windows.h>
 
 #include "BaseEntity.h"
 #include "Vector2Int.h"
@@ -181,11 +183,11 @@ namespace Game
                 switch (c)
                 {
                 case '#':
-                    customGrid.emplace_back(CellType::Wall);
+                    customGrid.emplace_back(CellType::Wall, Vector2Int{i, height});
                     continue;
                 case '.':
                 default: ;
-                    customGrid.emplace_back(CellType::Empty);
+                    customGrid.emplace_back(CellType::Empty, Vector2Int{i, height});
                     continue;
                 }
             }
