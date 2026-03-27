@@ -36,6 +36,11 @@ Vector2Int Snake::Head() const
     return m_body.front();
 }
 
+std::deque<Vector2Int>& Snake::GetBodyRef()
+{
+    return m_body;
+}
+
 CardinalValues Snake::Dir() const
 {
     return m_direction;

@@ -39,7 +39,7 @@ struct Cell
     
     bool visited{false};
     
-    int g{INT_MAX};    // the cost from the start node 
+    int g{9999};    // the cost from the start node 
     int h{0};       // the heuristic cost to the end node
     
     // sum of for the cost of g and h
@@ -57,7 +57,7 @@ struct Cell
     void ResetCellValue()
     {
         parentPosition.reset();
-        g = INT_MAX;
+        g = 9999;
         h=0;
         visited = false;
     }

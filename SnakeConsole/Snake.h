@@ -28,6 +28,7 @@ public:
     Vector2Int GetPosition() const override;
     // Get the first position
     Vector2Int Head() const;
+    std::deque<Vector2Int>& GetBodyRef();
     
     // in what direction the snake is moving 
     CardinalValues Dir() const;

@@ -272,6 +272,9 @@ namespace Game
             
             if (now - lastUpdate >= interval)
             {
+                
+                
+                
                 snake.Move(grid);
                 
                 // if the snake has hit himself or 

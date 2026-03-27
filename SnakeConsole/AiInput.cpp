@@ -3,6 +3,8 @@
 #include <conio.h>
 
 #include <algorithm>
+#include <iostream>
+#include <ostream>
 
 #include "FoodEntity.h"
 
@@ -129,6 +131,7 @@ void AiInput::AStarInput(GameInfo& gameInfo)
         
         if (bestCell->position == foodPosition)
         {
+            std::cout << "Path has been found" << std::endl;
             ReconstructInputPath(startCell, *bestCell, grid);
             return;
         }
@@ -190,7 +193,7 @@ void AiInput::ReconstructInputPath(const Cell& startPos, const Cell& endPos, Gri
         
         Vector2Int parentPos = current->parentPosition.value();
         
-        Vector2Int directionVector = current->position - startPos.position;
+        Vector2Int directionVector = current->position - parentPos;
         
         pathCells.push_back(Direction::GetDirectionByVector2Int(directionVector));
         current = &grid.GetCellRef(parentPos);
@@ -224,19 +227,27 @@ void AiInput::GetNextInput(GameInfo& gameInfo)
     // if user wants to quit game
     QuitGameInput(gameInfo);
     
+    gameInfo.grid.SetCell(gameInfo.food.GetPosition(), CellType::Food);
+    
+    for (auto& body : gameInfo.snake.GetBodyRef())
+    {
+        gameInfo.grid.SetCell(body, CellType::Player);
+    }
+    
+    
     ////// NOT WORKING ASTAR ALGORITHM //////
-    // if (pathCells.empty())
-    //     AStarInput(gameInfo);
-    // 
-    // if (!pathCells.empty())
-    // {
-    //     CardinalValues direction{pathCells.front()};
-    //     gameInfo.snake.SetNextDirection(direction);
-    //     pathCells.pop_front();
-    // }
+    if (pathCells.empty())
+        AStarInput(gameInfo);
+    
+    if (!pathCells.empty())
+    {
+        CardinalValues direction{pathCells.front()};
+        gameInfo.snake.SetNextDirection(direction);
+        pathCells.pop_front();
+    }
     /////////////////////////////////////////
     
     
-    GreedyInput(gameInfo);
+    // GreedyInput(gameInfo);
     // RandomDirection(gameInfo);
 }
