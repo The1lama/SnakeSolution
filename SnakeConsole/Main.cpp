@@ -158,13 +158,19 @@ namespace TerminalRender
 
 namespace Game
 {
+    // Reads the file and creates a custom grid
+    // that automaticly gets Width and Heigt
     Grid ReadLevelFile(std::string fileName)
     {
+        // this is where I will store all the grid cells
         std::vector<Cell> customGrid{};
+        // if the program could not read the file
         std::ifstream inf { fileName };
         if (!inf)
             return Grid{0,0, customGrid};
-     
+
+        // Count the Width and Height of the grid
+        // while reading every line
         int width{};
         int height{};
         
@@ -172,14 +178,18 @@ namespace Game
         std::string row;
         while (std::getline(inf, row))
         {
+            // Remove any whitespaces from the file
             std::erase_if(row, Helper::IsWhitespace);         
             // get the height and width of the map
             if (row.size() > width) width = row.size();
             ++height;
 
+            // loop for every char in the row through the file
             for (int i = 0; i < row.size(); ++i)
             {
                 char c = row[i];
+                // if it's a "#" char or a "." char create a new cell by said type 
+                // and store the Width and Height in the cell
                 switch (c)
                 {
                 case '#':
@@ -192,30 +202,38 @@ namespace Game
                 }
             }
         }
-        
+
+        // Create a new Grid class with the width, height and the grid layout as parameters
         return Grid {width, height, customGrid};
     }
 
-
+    // Draws all the different Maps/Levels that the game could use from the sub folder "Maps/"
     std::string GetSnakeLevelFile()
     {
         std::string fileName;
      
         TerminalRender::DrawSnakeLevels();
         
+        // Store all the string paths of the levels in an List 
         std::vector<std::string> levels;
         char path[6] = "Maps/";
         int levelAmount{0};
+
+        // Adds each level to the List and count the amount of entries we have
+        // Could also have used the levels.size()
         for (const auto& entry : std::filesystem::directory_iterator(path))
         {
             ++levelAmount;
             levels.push_back(entry.path().string());
             // std::cout << entry.path().string() << '\n';
         }
-        
+
+        // if there are no level maps return empty string
         if (levelAmount <= 0)
             return fileName;
-        
+
+        // reads the user input of the choosen map and 
+        // return said level file path string, so we can read it later
         int levelId = Helper::ReadIntInRange(1,levelAmount);
         return levels[levelId-1];
     }
